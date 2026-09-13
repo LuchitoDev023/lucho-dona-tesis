@@ -1,8 +1,14 @@
-// MHDS — render de estrategias (pasivas/activas), navegación desplegable y búsqueda
+// MHDS — render de estrategias (pasivas/activas), navegación desplegable, búsqueda
+// y comparador de transmitancia térmica (K) de envolventes.
 (function () {
   'use strict';
 
-  const state = { query: '' };
+  const state = {
+    query: '',
+    open: new Set(),                                  // ids de <details> abiertos (se conserva entre renders)
+    cmp: { set: 'muro', a: null, b: null },           // estado del comparador de K
+    lastWasQuery: false,
+  };
 
   const $ = (sel, el) => (el || document).querySelector(sel);
   const $$ = (sel, el) => Array.from((el || document).querySelectorAll(sel));
@@ -17,8 +23,15 @@
   ];
 
   const imgFor = s => `assets/strategies/${s.code}.jpg`;
+  const icoFor = code => `assets/strategies/${code}.jpg`;
   const iconFor = cat => `assets/icons/cat-${Number(cat.num)}.png`;
   const catsOf = type => Object.entries(CATEGORIES).filter(([, c]) => c.type === type);
+
+  const ARROW = '<svg class="group-arrow" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  const slug = str => str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  const nf = (n, d) => n.toFixed(d === undefined ? 2 : d).replace('.', ',');
 
   // ---------- Búsqueda ----------
   let searchTimer;
@@ -37,13 +50,14 @@
       s.code, s.title, s.text || '', s.group || '',
       CATEGORIES[s.cat].name,
       (s.ventajas || []).join(' '), (s.desventajas || []).join(' '),
-      (s.capas || []).join(' '), s.kdato || '', s.tip || '', (s.tips || []).join(' '),
+      (s.capas || []).join(' '), s.kdato || '', s.tip || '',
+      (s.tips || []).join(' '), (s.notas || []).join(' '),
     ].join(' ').toLowerCase();
     return state.query.split(/\s+/).every(w => hay.includes(w));
   }
 
   function esc(str) {
-    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
   function hl(str) {
@@ -59,6 +73,22 @@
 
   const tipbox = html => `<div class="tipbox"><span class="tip-icon">💡</span><p>${html}</p></div>`;
 
+  const iramClass = v => v === 'No cumple' ? 'iram-no' : v === 'Tipo A' ? 'iram-a' : v === 'Tipo B' ? 'iram-b' : 'iram-c';
+
+  // ---------- Agrupación en subcategorías ----------
+  function groupsOf(catKey, filtered) {
+    const groups = [];
+    (filtered || STRATEGIES.filter(s => s.cat === catKey)).forEach(s => {
+      const g = s.group || '';
+      let bucket = groups.find(b => b.name === g);
+      if (!bucket) { bucket = { name: g, items: [] }; groups.push(bucket); }
+      bucket.items.push(s);
+    });
+    return groups;
+  }
+
+  const groupId = (catKey, name) => `g-${catKey}-${slug(name)}`;
+
   // ---------- Menú desplegable del nav ----------
   function buildNavMenus() {
     $$('.nav-menu').forEach(menu => {
@@ -67,35 +97,14 @@
         <div class="nav-cat" style="--c:${c.color}">
           <a href="#cat-${key}"><span class="dot"></span><span class="nav-cat-name">${c.num} ${c.name}</span><span class="nav-caret">›</span></a>
           <div class="nav-sub">
-            ${STRATEGIES.filter(s => s.cat === key).map(s =>
-              `<a href="#s-${s.code}"><b>${s.code}</b> ${esc(s.title)}</a>`).join('')}
+            ${groupsOf(key).map(g => `
+              ${g.name ? `<a class="nav-sub-group" href="#${groupId(key, g.name)}">${esc(g.name)}</a>` : ''}
+              ${g.items.map(s => `<a href="#s-${s.code}"><b>${s.code}</b> ${esc(s.title)}</a>`).join('')}
+            `).join('')}
+            ${key === 'EV' ? '<a class="nav-sub-group" href="#cmp-envolventes">Comparador de aislación (K)</a>' : ''}
           </div>
         </div>`).join('');
     });
-  }
-
-  // ---------- Sponsors ----------
-  function initSponsors() {
-    const logo = s => {
-      const img = `<img src="${s.img}" alt="${esc(s.name)}" loading="lazy">`;
-      return s.url ? `<a href="${s.url}" target="_blank" rel="noopener" title="${esc(s.name)}">${img}</a>` : img;
-    };
-    $$('.sponsor-bar-logos, .sponsor-logos').forEach(el => {
-      el.innerHTML = SPONSORS.map(logo).join('');
-    });
-
-    const overlay = $('#sponsor-overlay');
-    if (!overlay || !SPONSORS.length) return;
-    const close = () => {
-      overlay.classList.add('closing');
-      setTimeout(() => { overlay.hidden = true; document.body.style.overflow = ''; }, 180);
-    };
-    overlay.hidden = false;
-    document.body.style.overflow = 'hidden';
-    $('#sponsor-close').addEventListener('click', close);
-    $('#sponsor-continue').addEventListener('click', close);
-    overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !overlay.hidden) close(); });
   }
 
   // ---------- Ficha de estrategia (formato del anexo: código · título | imagen | descripción) ----------
@@ -103,10 +112,7 @@
     const cat = CATEGORIES[s.cat];
 
     const badges = [];
-    if (s.iram) {
-      const cls = s.iram === 'No cumple' ? 'iram-no' : s.iram === 'Tipo A' ? 'iram-a' : s.iram === 'Tipo B' ? 'iram-b' : 'iram-c';
-      badges.push(`<span class="iram-badge ${cls}">${esc(s.iram)}</span>`);
-    }
+    if (s.iram) badges.push(`<span class="iram-badge ${iramClass(s.iram)}">${esc(s.iram)}</span>`);
     if (s.esp) badges.push(`<span class="data-badge">Esp. ${esc(s.esp)}</span><span class="data-badge">K ${esc(s.k)} W/m²K</span>`);
     if (s.kdato) badges.push(`<span class="data-badge">${esc(s.kdato)}</span>`);
 
@@ -154,6 +160,163 @@
     </article>`;
   }
 
+  // ============================================================
+  //  COMPARADOR DE TRANSMITANCIA TÉRMICA (K)
+  // ============================================================
+  const CMP_SETS = {
+    muro: {
+      label: 'Muros', group: 'Muro',
+      subject: it => `un muro de ${cmpIco(it)}<b>${esc(it.title)}</b> (${it.code})`,
+      limits: [['A', 0.33], ['B1', 0.62], ['B', 0.91], ['C', 1.59]],
+    },
+    cubierta: {
+      label: 'Cubiertas', group: 'Cubierta',
+      subject: it => `una cubierta de ${cmpIco(it)}<b>${esc(it.title)}</b> (${it.code})`,
+      limits: [['A', 0.18], ['B1', 0.31], ['B', 0.45], ['C', 0.72]],
+    },
+    vidrio: {
+      label: 'Vidrios', group: 'Aventanamientos - vidriado',
+      subject: it => `el ${cmpIco(it)}<b>${esc(it.title)}</b> (${it.code})`,
+      limits: null,
+    },
+  };
+
+  const cmpIco = it => `<img class="cmp-ico" src="${icoFor(it.code)}" alt="" loading="lazy">`;
+
+  const parseK = v => parseFloat(String(v).replace(/[^0-9,.]/g, '').replace(',', '.'));
+
+  function cmpItems(setKey) {
+    const cfg = CMP_SETS[setKey];
+    return STRATEGIES
+      .filter(s => s.cat === 'EV' && s.group === cfg.group)
+      .map(s => ({
+        code: s.code, title: s.title, esp: s.esp || '', iram: s.iram || '',
+        k: parseK(s.k != null ? s.k : (s.kdato || '')),
+      }))
+      .filter(it => !isNaN(it.k) && it.k > 0);
+  }
+
+  function cmpDefaults(setKey) {
+    const sorted = cmpItems(setKey).slice().sort((x, y) => y.k - x.k);
+    return { a: sorted[0].code, b: sorted[sorted.length - 1].code };
+  }
+
+  function cmpCurrent() {
+    const setKey = CMP_SETS[state.cmp.set] ? state.cmp.set : 'muro';
+    const items = cmpItems(setKey);
+    const ok = c => items.some(i => i.code === c);
+    if (!ok(state.cmp.a) || !ok(state.cmp.b)) {
+      const d = cmpDefaults(setKey);
+      state.cmp = { set: setKey, a: d.a, b: d.b };
+    }
+    return {
+      setKey, items,
+      A: items.find(i => i.code === state.cmp.a),
+      B: items.find(i => i.code === state.cmp.b),
+    };
+  }
+
+  function cmpCard(items, it, side) {
+    const opts = items.map(i =>
+      `<option value="${i.code}"${i.code === it.code ? ' selected' : ''}>${i.code} · ${esc(i.title)} — K ${nf(i.k)}</option>`).join('');
+    return `<div class="cmp-card">
+      <label class="cmp-label" for="cmp-sel-${side}">Sistema ${side.toUpperCase()}</label>
+      <select class="cmp-select" id="cmp-sel-${side}" data-side="${side}">${opts}</select>
+      <div class="cmp-card-body">
+        <img class="cmp-thumb" src="${icoFor(it.code)}" alt="${esc(it.code)} — ${esc(it.title)}" loading="lazy">
+        <div class="cmp-card-data">
+          <p class="cmp-k"><span>${nf(it.k)}</span> W/m²K</p>
+          <p class="cmp-meta">
+            ${it.iram ? `<span class="iram-badge ${iramClass(it.iram)}">${esc(it.iram)}</span>` : ''}
+            ${it.esp ? `<span class="data-badge">Esp. ${esc(it.esp)}</span>` : ''}
+            <a href="#s-${it.code}">Ver ficha ${it.code} ›</a>
+          </p>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function cmpVerdict(cfg, A, B) {
+    const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+    if (A.code === B.code) {
+      return `<div class="cmp-verdict-box"><p class="cmp-verdict">Elegí dos sistemas distintos para ver la comparación.</p></div>`;
+    }
+    const better = A.k <= B.k ? A : B;
+    const worse = A.k <= B.k ? B : A;
+    const ratio = worse.k / better.k;
+
+    if (ratio < 1.05) {
+      return `<div class="cmp-verdict-box">
+        <p class="cmp-verdict">${cap(cfg.subject(A))} y ${cfg.subject(B)} <b>aíslan prácticamente lo mismo</b>: K ${nf(A.k)} frente a K ${nf(B.k)} W/m²K.</p>
+      </div>`;
+    }
+    const red = (1 - better.k / worse.k) * 100;
+    return `<div class="cmp-verdict-box">
+      <p class="cmp-verdict">${cap(cfg.subject(better))} aísla <b class="cmp-ratio">${nf(ratio, 1)} veces más</b> que ${cfg.subject(worse)}.</p>
+      <p class="cmp-sub">Reduce las pérdidas de calor a través de esa superficie un <b>${nf(red, 0)}%</b>. Con 10&nbsp;°C de diferencia entre interior y exterior, cada m² deja pasar <b>${nf(better.k * 10, 1)} W</b> en lugar de <b>${nf(worse.k * 10, 1)} W</b>.</p>
+    </div>`;
+  }
+
+  function cmpRank(cfg, items, A, B) {
+    const max = Math.max.apply(null, items.map(i => i.k));
+    const rows = items.slice().sort((x, y) => x.k - y.k).map(i => {
+      const sel = (i.code === A.code || i.code === B.code) ? ' is-sel' : '';
+      return `<div class="cmp-row${sel}">
+        <img class="cmp-row-ico" src="${icoFor(i.code)}" alt="" loading="lazy">
+        <span class="cmp-row-label"><b>${i.code}</b> ${esc(i.title)}</span>
+        <span class="cmp-bar-track"><span class="cmp-bar ${i.iram ? iramClass(i.iram) : ''}" style="width:${Math.max(2, i.k / max * 100)}%"></span></span>
+        <span class="cmp-row-k">${nf(i.k)}</span>
+      </div>`;
+    }).join('');
+
+    const limits = cfg.limits ? `<div class="cmp-limits" aria-hidden="true">${cfg.limits.map(([n, v]) =>
+      `<span class="cmp-limit" style="left:${v / max * 100}%"><i></i><b>${n}</b></span>`).join('')}</div>` : '';
+
+    const legend = cfg.limits
+      ? 'Las líneas verticales marcan los valores máximos de K admitidos para los niveles A, B1, B y C de la tabla de la Introducción (región centro de Santa Fe). Cuanto más corta la barra, más aísla.'
+      : 'Cuanto más corta la barra, más aísla.';
+
+    return `<p class="cmp-rank-title">Todos los sistemas ordenados de mayor a menor aislación</p>
+      <div class="cmp-rank">${limits}${rows}</div>
+      <p class="cmp-legend">${legend}</p>`;
+  }
+
+  function comparatorInnerHTML() {
+    const cur = cmpCurrent();
+    const cfg = CMP_SETS[cur.setKey];
+    return `
+      <div class="cmp-tabs">${Object.keys(CMP_SETS).map(k =>
+        `<button type="button" class="chip cmp-tab${k === cur.setKey ? ' is-on' : ''}" data-set="${k}">${CMP_SETS[k].label}</button>`).join('')}</div>
+      <div class="cmp-pair">
+        ${cmpCard(cur.items, cur.A, 'a')}
+        <button type="button" class="cmp-swap" title="Invertir A y B" aria-label="Invertir A y B">⇄</button>
+        ${cmpCard(cur.items, cur.B, 'b')}
+      </div>
+      ${cmpVerdict(cfg, cur.A, cur.B)}
+      ${cmpRank(cfg, cur.items, cur.A, cur.B)}`;
+  }
+
+  function comparatorHTML() {
+    if (state.query) return '';
+    return `<details class="group-section cmp-section" id="cmp-envolventes"${state.open.has('cmp-envolventes') ? ' open' : ''}>
+      <summary class="group-summary">
+        <span class="group-name">Comparador de aislación (K)</span>
+        <span class="group-count">muros · cubiertas · vidrios</span>
+        <button type="button" class="info-btn" data-kmodal title="Valores de K admisibles (Norma IRAM)" aria-label="Ver la tabla de transmitancia térmica admisible">!</button>
+        ${ARROW}
+      </summary>
+      <div class="group-content">
+        <p class="cmp-intro">La transmitancia térmica <b>K</b> mide cuánto calor deja pasar 1&nbsp;m² de envolvente por cada grado de diferencia entre interior y exterior: <b>cuanto más bajo es el K, más aísla</b>. Elegí dos sistemas para compararlos.</p>
+        <div id="cmp-root">${comparatorInnerHTML()}</div>
+      </div>
+    </details>`;
+  }
+
+  function refreshComparator() {
+    const el = $('#cmp-root');
+    if (el) el.innerHTML = comparatorInnerHTML();
+  }
+
   // ---------- Intros / cierres de categoría ----------
   function catIntroHTML(key) {
     if (state.query) return '';
@@ -177,6 +340,7 @@
 
   function catOutroHTML(key) {
     if (state.query) return '';
+    if (key === 'EV') return comparatorHTML();
     if (key === 'P') {
       const v = VEGETACION_EXTRA;
       return `<div class="cat-intro">
@@ -189,7 +353,35 @@
   }
 
   // ---------- Render ----------
+  function captureOpen() {
+    // Si lo que hay en pantalla es un resultado de búsqueda, todo está forzado
+    // abierto: no sobrescribimos el estado real de despliegue del usuario.
+    if (state.query || state.lastWasQuery) return;
+    state.open = new Set($$('details.cat-section[id], details.group-section[id]')
+      .filter(d => d.open).map(d => d.id));
+  }
+
+  function subgroupHTML(catKey, g) {
+    // Avisos generales de la subcategoría: van al pie del grupo, debajo de las fichas.
+    const notas = g.items.reduce((acc, s) => acc.concat(s.notas || []), []);
+    const grid = `<div class="st-grid">${g.items.map(strategyHTML).join('')}</div>`
+      + (notas.length ? `<div class="group-notes">${notas.map(tipbox).join('')}</div>` : '');
+    if (!g.name) return grid;
+    const id = groupId(catKey, g.name);
+    const open = state.query || state.open.has(id) ? ' open' : '';
+    return `<details class="group-section" id="${id}"${open}>
+      <summary class="group-summary">
+        <span class="group-name">${esc(g.name)}</span>
+        <span class="group-count">${g.items.length}</span>
+        ${ARROW}
+      </summary>
+      <div class="group-content">${grid}</div>
+    </details>`;
+  }
+
   function render() {
+    captureOpen();
+
     const frag = [];
     let total = 0;
 
@@ -202,15 +394,11 @@
         if (!items.length) return;
         total += items.length;
 
-        const groups = [];
-        items.forEach(s => {
-          const g = s.group || '';
-          let bucket = groups.find(b => b.name === g);
-          if (!bucket) { bucket = { name: g, items: [] }; groups.push(bucket); }
-          bucket.items.push(s);
-        });
+        const groups = groupsOf(key, items);
+        const catId = `cat-${key}`;
+        const open = state.query || state.open.has(catId) ? ' open' : '';
 
-        catBlocks.push(`<details class="cat-section" id="cat-${key}" style="--c:${cat.color}"${state.query ? ' open' : ''}>
+        catBlocks.push(`<details class="cat-section" id="${catId}" style="--c:${cat.color}"${open}>
           <summary class="cat-header">
             <div class="cat-icon"><img src="${iconFor(cat)}" alt="" loading="lazy"></div>
             <div class="cat-header-text">
@@ -220,10 +408,7 @@
           </summary>
           <div class="cat-content">
             ${catIntroHTML(key)}
-            ${groups.map(g => `
-              ${g.name ? `<p class="group-title">${esc(g.name)}</p>` : ''}
-              <div class="st-grid">${g.items.map(strategyHTML).join('')}</div>
-            `).join('')}
+            ${groups.map(g => subgroupHTML(key, g)).join('')}
             ${catOutroHTML(key)}
           </div>
         </details>`);
@@ -255,17 +440,86 @@
     } else {
       noteEl.hidden = true;
     }
+    state.lastWasQuery = !!state.query;
   }
 
-  // ---------- Navegación hacia categorías/estrategias colapsadas ----------
+  // ---------- Ventana flotante con la tabla de K admisible (punto 06) ----------
+  function initKModal() {
+    const modal = $('#k-modal');
+    const body = $('#k-modal-body');
+    const src = $('#intro-k');
+    if (!modal || !body || !src) return;
+    // Una sola fuente de verdad: se clona la tabla del punto 06 de la Introducción.
+    $$('.table-wrap, .caption', src).forEach(el => body.appendChild(el.cloneNode(true)));
+  }
+
+  function openKModal() {
+    const modal = $('#k-modal');
+    if (!modal) return;
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    const btn = $('#k-modal-close');
+    if (btn) btn.focus();
+  }
+
+  function closeKModal() {
+    const modal = $('#k-modal');
+    if (!modal || modal.hidden) return;
+    modal.hidden = true;
+    document.body.style.overflow = '';
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeKModal(); });
+
+  // ---------- Navegación hacia categorías/subcategorías/estrategias colapsadas ----------
+  function openAncestors(el) {
+    let node = el;
+    while (node) {
+      const det = node.closest('details');
+      if (!det) break;
+      det.open = true;
+      node = det.parentElement;
+    }
+  }
+
   document.addEventListener('click', e => {
-    const a = e.target.closest('a[href^="#cat-"], a[href^="#s-"]');
+    // Ventana flotante con la tabla de K admisible
+    if (e.target.closest('[data-kmodal]')) {
+      e.preventDefault();      // evita que el <summary> se despliegue
+      e.stopPropagation();
+      openKModal();
+      return;
+    }
+    if (e.target.closest('#k-modal-close') || e.target.id === 'k-modal') {
+      closeKModal();
+      return;
+    }
+
+    // Comparador: pestañas e inversión
+    const tab = e.target.closest('.cmp-tab');
+    if (tab) {
+      const set = tab.dataset.set;
+      const d = cmpDefaults(set);
+      state.cmp = { set: set, a: d.a, b: d.b };
+      refreshComparator();
+      return;
+    }
+    if (e.target.closest('.cmp-swap')) {
+      const tmp = state.cmp.a;
+      state.cmp.a = state.cmp.b;
+      state.cmp.b = tmp;
+      refreshComparator();
+      return;
+    }
+
+    const a = e.target.closest('a[href^="#cat-"], a[href^="#g-"], a[href^="#s-"], a[href^="#cmp-"], a[href^="#intro-"]');
     if (!a) return;
     const target = document.querySelector(a.getAttribute('href'));
     if (!target) return;
     e.preventDefault();
-    const det = target.matches('details') ? target : target.closest('details');
-    if (det) det.open = true;
+    closeKModal();
+    openAncestors(target.matches('details') ? target.parentElement : target);
+    if (target.matches('details')) target.open = true;
     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     if (target.classList.contains('st-item')) {
       target.classList.remove('flash');
@@ -275,7 +529,14 @@
     history.replaceState(null, '', a.getAttribute('href'));
   });
 
+  document.addEventListener('change', e => {
+    const sel = e.target.closest('.cmp-select');
+    if (!sel) return;
+    state.cmp[sel.dataset.side] = sel.value;
+    refreshComparator();
+  });
+
   buildNavMenus();
-  initSponsors();
+  initKModal();
   render();
 })();

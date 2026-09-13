@@ -239,7 +239,9 @@ const STRATEGIES = [
     text: 'Disponer sistema aislado de la red eléctrica para alcanzar autonomía energética, mediante un banco de baterías que implica un mayor costo y mantenimiento, recomendado para zonas rurales o donde no exista acceso a la red.' },
   { code: 'ER03', cat: 'ER', group: 'Energía Fotovoltaica y solar', title: 'TERMOTANQUE SOLAR',
     text: 'Aprovechar la energía solar para el calentamiento de agua de uso sanitario, calefacción y acondicionamiento térmico de piscinas.',
-    tips: [
+    // "notas": avisos generales de la subcategoría. Se renderizan al pie del grupo
+    // (debajo de la línea de las fichas), no dentro de la ficha.
+    notas: [
       'En la provincia de Santa Fe existe un programa llamado <b>“Prosumidores”</b> que permite generar energía renovable para auto consumo y vender la producción de energía excedente a la Empresa Provincial de la Energía (EPE). Además ofrecen reconocimientos económicos y créditos de inversión para la transición energética de energías renovables',
       'Los <b>paneles solares</b> buscan aprovechar la mayor cantidad de radiación durante todo el año. Se recomienda orientación norte, y una <b>inclinación de 32°</b> (próxima a la latitud local).',
       'Los <b>termotanques</b> buscan garantizar el suministro en la época desfavorable (invierno) y prevenir riesgos operativos por sobretemperatura en verano. Se recomienda orientación norte, y una <b>inclinación de 45°</b>.',

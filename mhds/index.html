@@ -10,12 +10,6 @@
 </head>
 <body>
 
-<!-- ============ SPONSORS: barra superior ============ -->
-<div class="sponsor-bar">
-  <span class="sponsor-bar-label">Con el apoyo de</span>
-  <div class="sponsor-bar-logos"></div>
-</div>
-
 <!-- ============ PORTADA ============ -->
 <header class="hero" id="inicio">
   <div class="hero-inner">
@@ -136,7 +130,7 @@
     </div>
   </details>
 
-  <details class="intro-block">
+  <details class="intro-block" id="intro-k">
     <summary><span class="intro-num">06</span> TRANSMITANCIA TÉRMICA (K)</summary>
     <div class="intro-body">
       <p>Se define transmitancia térmica “K” (en W/m²K) como la cantidad de energía calórica medida en Watts, que transmite en estado de régimen un muro o techo por metro cuadrado y por grado Kelvin de diferencia de temperatura entre el interior y el exterior.</p>
@@ -179,13 +173,14 @@
   <p><a href="https://lucho-dona-arquitecto.vercel.app/" target="_blank" rel="noopener">Dona Luciano</a> | <a href="https://www.instagram.com/crramira.arq/" target="_blank" rel="noopener">Ramira Camila</a></p>
 </footer>
 
-<!-- ============ SPONSORS: ventana de bienvenida ============ -->
-<div class="sponsor-overlay" id="sponsor-overlay" hidden>
-  <div class="sponsor-modal" role="dialog" aria-modal="true" aria-labelledby="sponsor-title">
-    <button class="sponsor-close" id="sponsor-close" aria-label="Cerrar y continuar">✕</button>
-    <p class="sponsor-title" id="sponsor-title">Este proyecto es posible gracias a:</p>
-    <div class="sponsor-logos"></div>
-    <button class="btn-continue" id="sponsor-continue">Continuar</button>
+<!-- ============ Ventana flotante: tabla de K admisible (se clona del punto 06) ============ -->
+<div class="kmodal" id="k-modal" hidden>
+  <div class="kmodal-box" role="dialog" aria-modal="true" aria-labelledby="k-modal-title">
+    <button class="kmodal-close" id="k-modal-close" aria-label="Cerrar">✕</button>
+    <p class="kmodal-title" id="k-modal-title">Transmitancia térmica (K) admisible</p>
+    <p class="kmodal-lead">Valores máximos de K que puede tener la envolvente para alcanzar cada nivel de confort. Un sistema cumple un nivel cuando su K es <b>menor o igual</b> al de la fila.</p>
+    <div id="k-modal-body"></div>
+    <a class="kmodal-link" href="#intro-k">Ver el punto 06 de la Introducción ›</a>
   </div>
 </div>
 
