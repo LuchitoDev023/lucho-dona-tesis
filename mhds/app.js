@@ -150,7 +150,7 @@
 
     return `<article class="st-item${wide ? ' st-wide-item' : ''}" id="s-${s.code}" style="--c:${cat.color}">
       <header class="st-head"><span class="st-code">${hl(s.code)}</span><h4 class="st-title">${hl(s.title)}</h4></header>
-      <div class="st-media"><img src="${imgFor(s)}" alt="${esc(s.code)} — ${esc(s.title)}" loading="lazy"></div>
+      <div class="st-media"><button type="button" class="st-zoom" data-code="${s.code}" aria-label="Ver la ficha ${esc(s.code)} ampliada"><img src="${imgFor(s)}" alt="${esc(s.code)} — ${esc(s.title)}" loading="lazy"><span class="st-zoom-hint" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M15.5 15.5L21 21M10.5 7.5v6M7.5 10.5h6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>Ampliar</span></button></div>
       <div class="st-body">
         ${badges.length ? `<div class="badges">${badges.join('')}</div>` : ''}
         ${s.text ? `<p class="st-text">${hl(s.text)}</p>` : ''}
@@ -206,7 +206,7 @@
         <div class="agua-total-col"><span class="agua-total-label">Tradicionales</span><span class="agua-total-num agua-t-trad">${tot.trad}<small> L/día</small></span></div>
         <div class="agua-total-arrow" aria-hidden="true">→</div>
         <div class="agua-total-col"><span class="agua-total-label">Eficientes</span><span class="agua-total-num agua-t-efic">${tot.efic}<small> L/día</small></span></div>
-        <div class="agua-total-save"><b>${ahorroDia} litros menos por día</b><span>≈ ${miles(Math.round(ahorroDia * 365 / 1000) * 1000)} litros al año</span></div>
+        <div class="agua-total-save"><b>${ahorroDia} litros menos por día (−${Math.round(ahorroDia / tot.trad * 100)}%)</b><span>≈ ${miles(Math.round(ahorroDia * 365 / 1000) * 1000)} litros al año</span></div>
       </div>
       <details class="agua-data">
         <summary>Ver tabla de datos</summary>
@@ -339,7 +339,7 @@
       `<span class="cmp-limit" style="left:${v / max * 100}%"><i></i><b>${n}</b></span>`).join('')}</div>` : '';
 
     const legend = cfg.limits
-      ? 'Las líneas verticales marcan los valores máximos de K admitidos para los niveles A, B1, B y C de la tabla de la Introducción (región centro de Santa Fe; fuente: Norma IRAM 11605). Cuanto más corta la barra, más aísla.'
+      ? 'Las líneas verticales marcan los valores máximos de K admitidos para los niveles A, B1, B y C de la tabla de la Introducción (región centro de Santa Fe; fuente: Norma IRAM 11.605). Cuanto más corta la barra, más aísla.'
       : 'Cuanto más corta la barra, más aísla.';
 
     return `<p class="cmp-rank-title">Todos los sistemas ordenados de mayor a menor aislación</p>
@@ -554,16 +554,81 @@
     document.body.style.overflow = '';
   }
 
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeKModal(); hideRef(); } });
+  // ---------- Ficha ampliada: al tocar la imagen de una estrategia ----------
+  let fCode = null;
+
+  function fichaOrder() {
+    return $$('#strategy-root .st-item').map(el => el.id.replace(/^s-/, ''));
+  }
+
+  function openFicha(code) {
+    const s = STRATEGIES.find(x => x.code === code);
+    const art = $(`#s-${code}`);
+    const modal = $('#f-modal');
+    if (!s || !art || !modal) return;
+    const cat = CATEGORIES[s.cat];
+    fCode = code;
+
+    // Texto de la ficha: el mismo cuerpo que en el manual (+ ventajas/desventajas si van en fila aparte)
+    const body = art.querySelector('.st-body').cloneNode(true);
+    const vd = art.querySelector('.st-row .vd-grid');
+    if (vd) body.appendChild(vd.cloneNode(true));
+
+    $('.fmodal-box', modal).style.setProperty('--c', cat.color);
+    $('#f-modal-body').innerHTML = `
+      <header class="fm-head">
+        <p class="fm-cat"><span class="dot"></span>${cat.num} | ${esc(cat.name)}${s.group ? ` · ${esc(s.group)}` : ''}</p>
+        <p class="fm-code">${esc(s.code)}</p>
+        <h3 class="fm-title" id="f-modal-title">${esc(s.title)}</h3>
+      </header>
+      <div class="fm-grid">
+        <div class="fm-media"><img src="${imgFor(s)}" alt="${esc(s.code)} — ${esc(s.title)}"></div>
+        <div class="fm-body">${body.innerHTML}</div>
+      </div>
+      <a class="fm-link" href="#s-${s.code}">Ver en el manual ›</a>`;
+
+    const order = fichaOrder();
+    const i = order.indexOf(code);
+    $$('.fmodal-step', modal).forEach(btn => {
+      const other = order[i + Number(btn.dataset.step)];
+      btn.disabled = !other;
+      btn.dataset.code = other || '';
+      $('span', btn).textContent = other || '';
+    });
+
+    if (modal.hidden) {
+      modal.hidden = false;
+      document.body.style.overflow = 'hidden';
+      $('#f-modal-close').focus();
+    }
+    $('.fmodal-box', modal).scrollTop = 0;
+  }
+
+  function closeFicha() {
+    const modal = $('#f-modal');
+    if (!modal || modal.hidden) return;
+    modal.hidden = true;
+    document.body.style.overflow = '';
+    const btn = fCode && $(`#s-${fCode} .st-zoom`);
+    if (btn) btn.focus({ preventScroll: true });
+    fCode = null;
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeKModal(); closeFicha(); hideRef(); }
+    if (fCode && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) {
+      const btn = $(`.fmodal-step[data-step="${e.key === 'ArrowRight' ? 1 : -1}"]`);
+      if (btn && !btn.disabled) openFicha(btn.dataset.code);
+    }
+  });
 
   // ---------- Bibliografía y fuentes (al final de la página) ----------
   function renderBiblio() {
-    const el = $('#bibliografia');
+    const el = $('#biblio-body');
     if (!el) return;
     const entries = Object.entries(REFS);
     const item = ([key, r]) => `<li id="ref-${key}">${linkify(r.html)}</li>`;
-    el.innerHTML = `<h2 class="section-title" id="biblio-title">BIBLIOGRAFÍA Y FUENTES</h2>
-      <p class="section-hint">Los asteriscos (<span class="ref-demo">*</span>) del manual remiten a estas referencias: pasá el mouse por encima para verlas.</p>
+    el.innerHTML = `<p class="biblio-hint">Los asteriscos (<span class="ref-demo">*</span>) del manual remiten a estas referencias: pasá el mouse por encima para verlas.</p>
       <ul class="biblio-list">${entries.filter(([, r]) => r.bib).map(item).join('')}</ul>
       <h3 class="biblio-sub">Notas y fuentes complementarias</h3>
       <ul class="biblio-list biblio-notes">${entries.filter(([, r]) => !r.bib).map(item).join('')}</ul>`;
@@ -653,6 +718,13 @@
     }
     if (!e.target.closest('#ref-pop')) hideRef();
 
+    // Ficha ampliada: abrir desde la imagen, navegar y cerrar
+    const zoom = e.target.closest('.st-zoom');
+    if (zoom) { openFicha(zoom.dataset.code); return; }
+    const step = e.target.closest('.fmodal-step');
+    if (step) { if (!step.disabled) openFicha(step.dataset.code); return; }
+    if (e.target.closest('#f-modal-close') || e.target.id === 'f-modal') { closeFicha(); return; }
+
     // Ventana flotante con la tabla de K admisible
     if (e.target.closest('[data-kmodal]')) {
       e.preventDefault();      // evita que el <summary> se despliegue
@@ -688,6 +760,7 @@
     if (!target) return;
     e.preventDefault();
     closeKModal();
+    closeFicha();
     hideRef();
     openAncestors(target.matches('details') ? target.parentElement : target);
     if (target.matches('details')) target.open = true;

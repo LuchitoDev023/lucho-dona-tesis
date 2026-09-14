@@ -554,17 +554,93 @@ table { border-collapse: collapse; width: 100%; font-size: .93rem; background: #
 .ref-pop-link { display: inline-block; margin-top: 8px; font-size: .78rem; font-weight: 700; color: var(--sage); text-decoration: none; }
 .ref-pop-link:hover { text-decoration: underline; }
 
-/* ---------- Bibliografía y fuentes ---------- */
-.biblio { padding-bottom: 10px; }
-.biblio-list { list-style: none; font-size: .9rem; }
+/* ---------- Bibliografía y fuentes: desplegable discreto al final ---------- */
+.biblio { padding-top: 34px; padding-bottom: 0; }
+.biblio-fold { border-top: 1px solid var(--line); }
+.biblio-fold > summary {
+  cursor: pointer; list-style: none; user-select: none; width: max-content; max-width: 100%;
+  display: flex; align-items: center; gap: 8px; padding: 14px 2px 6px;
+  font-size: .78rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.biblio-fold > summary::-webkit-details-marker { display: none; }
+.biblio-fold > summary::after { content: '+'; font-size: 1.05rem; font-weight: 400; letter-spacing: 0; color: var(--sage-light); transition: transform .2s; }
+.biblio-fold[open] > summary::after { transform: rotate(45deg); }
+.biblio-fold > summary:hover { color: var(--sage-dark); }
+.biblio-body { padding: 4px 0 6px; }
+.biblio-hint { font-size: .8rem; color: var(--ink-soft); margin: 2px 2px 8px; }
+.biblio-list { list-style: none; font-size: .82rem; color: var(--ink-soft); }
 .biblio-list li {
-  padding: 8px 12px 8px 34px; text-indent: -22px; border-radius: 8px;
+  padding: 5px 10px 5px 30px; text-indent: -20px; border-radius: 8px; line-height: 1.5;
   scroll-margin-top: 90px;
 }
 .biblio-list li a { color: var(--sage-dark); word-break: break-all; }
 .biblio-list li.flash { animation: stflash 1.8s ease; }
-.biblio-sub { font-size: 1rem; color: var(--sage-dark); margin: 24px 0 4px; letter-spacing: .02em; }
-.biblio-notes { font-size: .86rem; color: var(--ink-soft); }
+.biblio-sub { font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-soft); margin: 16px 2px 2px; }
+.biblio-notes { font-size: .78rem; }
+
+/* ---------- Imagen de la ficha: botón para ampliar ---------- */
+.st-zoom {
+  position: relative; display: block; border: 0; padding: 0; background: none;
+  cursor: zoom-in; border-radius: 10px; font: inherit;
+}
+.st-zoom img { display: block; transition: transform .2s ease; }
+.st-zoom:hover img, .st-zoom:focus-visible img { transform: scale(1.03); }
+.st-zoom:focus-visible { outline: 3px solid var(--c, var(--sage)); outline-offset: 3px; }
+.st-zoom-hint {
+  position: absolute; right: 6px; bottom: 6px; display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(44,55,51,.78); color: #fff; font-size: .7rem; font-weight: 700;
+  padding: 4px 8px 4px 6px; border-radius: 999px; opacity: 0; transform: translateY(3px);
+  transition: opacity .15s ease, transform .15s ease; pointer-events: none;
+}
+.st-zoom:hover .st-zoom-hint, .st-zoom:focus-visible .st-zoom-hint { opacity: 1; transform: none; }
+@media (hover: none) { .st-zoom-hint { opacity: .9; transform: none; padding: 4px 6px; } }
+
+/* ---------- Ventana flotante: ficha ampliada ---------- */
+.fmodal {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(30,38,34,.55); backdrop-filter: blur(3px);
+  display: grid; place-items: center; padding: 24px;
+  animation: km-fade .2s ease;
+}
+.fmodal[hidden] { display: none; }
+.fmodal-box {
+  position: relative; width: min(1000px, 100%); max-height: 92vh; overflow-y: auto;
+  background: #fff; border-radius: 18px; box-shadow: var(--shadow-lg);
+  border-top: 6px solid var(--c, var(--sage));
+  padding: 30px 34px 20px; animation: km-pop .24s ease;
+}
+.fmodal-close { z-index: 1; }
+.fm-head { padding-right: 40px; }
+.fm-cat { display: flex; align-items: center; gap: 8px; font-size: .74rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
+.fm-cat .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--c); flex-shrink: 0; }
+.fm-code { margin-top: 12px; font-size: 1rem; font-weight: 800; letter-spacing: .1em; color: var(--c); }
+.fm-title { font-size: clamp(1.4rem, 3vw, 2rem); line-height: 1.2; font-weight: 800; color: var(--ink); }
+.fm-grid {
+  display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 30px;
+  align-items: center; margin-top: 20px;
+}
+.fm-media { display: grid; place-items: center; }
+.fm-media img { width: 100%; max-width: 480px; max-height: 60vh; object-fit: contain; }
+.fm-body { font-size: 1.02rem; min-width: 0; }
+.fm-body .st-text { font-size: 1.08rem; line-height: 1.65; }
+.fm-body .badges { margin-bottom: 12px; }
+.fm-body .iram-badge, .fm-body .data-badge { font-size: .8rem; padding: 3px 11px; }
+.fm-body .vd-grid { grid-template-columns: 1fr; }
+.fm-link { display: inline-block; margin-top: 18px; font-size: .85rem; font-weight: 700; color: var(--sage); text-decoration: none; }
+.fm-link:hover { text-decoration: underline; }
+.fmodal-nav {
+  display: flex; justify-content: space-between; gap: 12px;
+  margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line);
+}
+.fmodal-step {
+  border: 1px solid var(--line); background: #fff; color: var(--ink); cursor: pointer;
+  font: inherit; font-size: .85rem; font-weight: 700; padding: 8px 16px; border-radius: 999px;
+  transition: background .15s ease, border-color .15s ease;
+}
+.fmodal-step span { letter-spacing: .06em; }
+.fmodal-step:hover:not(:disabled) { background: #f0f3ee; border-color: var(--sage-light); }
+.fmodal-step:disabled { visibility: hidden; }
 
 /* ---------- Footer ---------- */
 .footer {
@@ -615,6 +691,11 @@ mark { background: #ffe89a; border-radius: 3px; padding: 0 1px; }
   .agua-total-save { margin-left: 0; text-align: left; flex-basis: 100%; }
   .agua-total-num { font-size: 1.7rem; }
   .tip-img { width: 60px; }
+  .fmodal { padding: 10px; }
+  .fmodal-box { padding: 22px 18px 14px; max-height: 94vh; }
+  .fm-grid { grid-template-columns: 1fr; gap: 14px; margin-top: 14px; }
+  .fm-media img { max-height: 42vh; }
+  .fm-body .st-text { font-size: 1rem; }
 }
 @media (min-width: 721px) and (max-width: 1000px) {
   .st-item { grid-template-columns: 145px 220px minmax(0, 1fr); gap: 10px 22px; }

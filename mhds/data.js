@@ -181,7 +181,7 @@ const STRATEGIES = [
 
   // ============ 06 | ARTEFACTOS EFICIENTES [AE] ============
   { code: 'AE01', cat: 'AE', group: '', title: 'AGUA',
-    text: 'Utilizar griferías con aireadores, inodoros de doble descarga, duchas de caudal limitado pudiendo disminuir un 58% el consumo de agua.',
+    text: 'Utilizar griferías con aireadores, inodoros de doble descarga, duchas de caudal limitado pudiendo disminuir un 54% el consumo de agua.',
     tabla: {
       headers: ['Cant.', 'Artefacto', 'Tiempo/Frecuencia', 'Consumo por unidad (L)', 'Día Entero (L)'],
       tradicionales: [
