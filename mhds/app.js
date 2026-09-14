@@ -51,8 +51,8 @@
       CATEGORIES[s.cat].name,
       (s.ventajas || []).join(' '), (s.desventajas || []).join(' '),
       (s.capas || []).join(' '), s.kdato || '', s.tip || '',
-      (s.tips || []).join(' '), (s.notas || []).join(' '),
-    ].join(' ').toLowerCase();
+      (s.tips || []).join(' '), (s.notas || []).map(n => n.html || n).join(' '),
+    ].join(' ').replace(REF_TOKEN, '').toLowerCase();
     return state.query.split(/\s+/).every(w => hay.includes(w));
   }
 
@@ -71,9 +71,19 @@
     return out;
   }
 
-  const tipbox = html => `<div class="tipbox"><span class="tip-icon">💡</span><p>${html}</p></div>`;
+  // ---------- Referencias: "[*clave]" → asterisco con ventana al pasar el mouse ----------
+  const REF_TOKEN = /\[\*([a-z0-9-]+)\]/g;
+  const refMark = key => REFS[key]
+    ? `<button type="button" class="ref" data-ref="${key}" aria-label="Ver referencia">*</button>` : '';
+  const withRefs = html => String(html).replace(REF_TOKEN, (_, key) => refMark(key));
+  const linkify = html => html.replace(/(https?:\/\/[^\s<]+[^\s<.,;)])/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
 
-  const iramClass = v => v === 'No cumple' ? 'iram-no' : v === 'Tipo A' ? 'iram-a' : v === 'Tipo B' ? 'iram-b' : 'iram-c';
+  // Recuadro de dato/tip: foquito por defecto, o el gráfico propio de la nota si lo tiene
+  const tipbox = (html, icon, alt) => `<div class="tipbox${icon ? ' tipbox-img' : ''}">${icon
+    ? `<img class="tip-img" src="${icon}" alt="${esc(alt || '')}" loading="lazy">`
+    : '<span class="tip-icon" aria-hidden="true">💡</span>'}<p>${withRefs(html)}</p></div>`;
+
+  const iramClass = v => v === 'No cumple' ? 'iram-no' : v === 'Clase A' ? 'iram-a' : v === 'Clase B' ? 'iram-b' : 'iram-c';
 
   // ---------- Agrupación en subcategorías ----------
   function groupsOf(catKey, filtered) {
@@ -97,6 +107,7 @@
         <div class="nav-cat" style="--c:${c.color}">
           <a href="#cat-${key}"><span class="dot"></span><span class="nav-cat-name">${c.num} ${c.name}</span><span class="nav-caret">›</span></a>
           <div class="nav-sub">
+            ${key === 'EV' ? `<a class="nav-sub-group" href="#${groupId('EV', 'Consideraciones generales')}">Consideraciones generales</a>` : ''}
             ${groupsOf(key).map(g => `
               ${g.name ? `<a class="nav-sub-group" href="#${groupId(key, g.name)}">${esc(g.name)}</a>` : ''}
               ${g.items.map(s => `<a href="#s-${s.code}"><b>${s.code}</b> ${esc(s.title)}</a>`).join('')}
@@ -116,40 +127,28 @@
     if (s.esp) badges.push(`<span class="data-badge">Esp. ${esc(s.esp)}</span><span class="data-badge">K ${esc(s.k)} W/m²K</span>`);
     if (s.kdato) badges.push(`<span class="data-badge">${esc(s.kdato)}</span>`);
 
+    // Las fichas con tabla o funcionamiento (AE01, AE03, AE04) muestran la línea
+    // código | gráfico | texto, y debajo filas a todo el ancho de la ficha.
+    const wide = !!(s.tabla || s.ciclo);
     const extras = [];
+    const rows = [];
+
     if (s.capas) {
       extras.push(`<p class="st-label">Solución — capas que la componen:</p>
         <ul class="st-capas">${s.capas.map(c => `<li>${hl(c)}</li>`).join('')}</ul>`);
     }
     if (s.ventajas || s.desventajas) {
-      extras.push(`<div class="vd-grid">
+      (wide ? rows : extras).push(`<div class="vd-grid">
         ${s.ventajas ? `<div class="vd-col vd-ventajas"><h5>Ventajas</h5><ul>${s.ventajas.map(v => `<li>${hl(v)}</li>`).join('')}</ul></div>` : ''}
         ${s.desventajas ? `<div class="vd-col vd-desventajas"><h5>Desventajas</h5><ul>${s.desventajas.map(v => `<li>${hl(v)}</li>`).join('')}</ul></div>` : ''}
       </div>`);
     }
-    if (s.ciclo) {
-      extras.push(`<div class="ciclo"><p class="ciclo-intro">${esc(s.ciclo.intro)}</p><ol>${s.ciclo.pasos.map(([b, t]) => `<li><b>${esc(b)}</b> ${esc(t)}</li>`).join('')}</ol></div>`);
-    }
-    if (s.tabla) {
-      const t = s.tabla;
-      const row = r => `<tr><td></td>${r.map(c => `<td>${esc(c)}</td>`).join('')}</tr>`;
-      extras.push(`<div class="table-wrap"><table class="ae-table">
-        <thead><tr>${t.headers.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead>
-        <tbody>
-          <tr class="grp"><td colspan="5">TRADICIONALES</td></tr>
-          ${t.tradicionales.map(row).join('')}
-          <tr class="tt-row"><td>TOTAL</td><td></td><td></td><td></td><td>${t.totalTradicionales}</td></tr>
-          <tr class="grp"><td colspan="5">EFICIENTES</td></tr>
-          ${t.eficientes.map(row).join('')}
-          <tr class="tt-row"><td>TOTAL</td><td></td><td></td><td></td><td>${t.totalEficientes}</td></tr>
-        </tbody>
-      </table></div>
-      <p class="caption">${esc(t.caption).replace(/\n/g, '<br>')}</p>`);
-    }
+    if (s.ciclo) rows.push(cicloHTML(s.ciclo));
+    if (s.tabla) rows.push(aguaHTML(s.tabla));
     if (s.tip) extras.push(tipbox(s.tip));
     if (s.tips) s.tips.forEach(t => extras.push(tipbox(t)));
 
-    return `<article class="st-item" id="s-${s.code}" style="--c:${cat.color}">
+    return `<article class="st-item${wide ? ' st-wide-item' : ''}" id="s-${s.code}" style="--c:${cat.color}">
       <header class="st-head"><span class="st-code">${hl(s.code)}</span><h4 class="st-title">${hl(s.title)}</h4></header>
       <div class="st-media"><img src="${imgFor(s)}" alt="${esc(s.code)} — ${esc(s.title)}" loading="lazy"></div>
       <div class="st-body">
@@ -157,7 +156,74 @@
         ${s.text ? `<p class="st-text">${hl(s.text)}</p>` : ''}
         ${extras.join('')}
       </div>
+      ${rows.map(r => `<div class="st-row">${r}</div>`).join('')}
     </article>`;
+  }
+
+  // ---------- Funcionamiento (AE03, AE04): pasos numerados en tarjetas ----------
+  function cicloHTML(c) {
+    return `<p class="st-label">Funcionamiento</p>
+      <div class="ciclo">
+        <p class="ciclo-intro">${hl(c.intro)}</p>
+        <ol class="ciclo-pasos">${c.pasos.map(([b, t], i) => {
+          const name = b.replace(/^\(\d+\)\.\s*/, '').replace(/:\s*$/, '');
+          return `<li class="ciclo-paso"><span class="ciclo-num">${i + 1}</span><div><b>${hl(name)}</b><p>${hl(t)}</p></div></li>`;
+        }).join('')}</ol>
+      </div>`;
+  }
+
+  // ---------- AE01: consumo de agua, tradicional vs eficiente ----------
+  function aguaHTML(t) {
+    const max = Math.max.apply(null, t.pares.map(p => p.trad.dia));
+    const pct = n => `${Math.max(1.5, n / max * 100)}%`;
+    const tot = { trad: +t.totalTradicionales, efic: +t.totalEficientes };
+    const ahorroDia = tot.trad - tot.efic;
+    const miles = n => n.toLocaleString('es-AR');
+
+    const filas = t.pares.map(p => {
+      const menos = Math.round((1 - p.efic.dia / p.trad.dia) * 100);
+      return `<div class="agua-row">
+        <div class="agua-name"><b>${esc(p.artefacto)}</b><span>${esc(p.trad.unidad)} → <em>${esc(p.efic.unidad)}</em></span></div>
+        <div class="agua-bars">
+          <div class="agua-bar agua-trad" style="width:${pct(p.trad.dia)}"><span>${p.trad.dia} L</span></div>
+          <div class="agua-bar agua-efic" style="width:${pct(p.efic.dia)}"><span>${p.efic.dia} L</span></div>
+        </div>
+        <div class="agua-save" title="Ahorro con ${esc(p.artefacto.toLowerCase())} ${esc(p.mejora)}">−${menos}%</div>
+      </div>`;
+    }).join('');
+
+    const row = r => `<tr><td></td>${r.map(c => `<td>${esc(c)}</td>`).join('')}</tr>`;
+    return `<div class="agua">
+      <div class="agua-head">
+        <p class="agua-title">¿Cuánta agua usa una vivienda por día?</p>
+        <div class="agua-legend">
+          <span><i class="agua-dot agua-trad"></i>Artefactos tradicionales</span>
+          <span><i class="agua-dot agua-efic"></i>Artefactos eficientes</span>
+        </div>
+      </div>
+      <div class="agua-rows">${filas}</div>
+      <div class="agua-total">
+        <div class="agua-total-col"><span class="agua-total-label">Tradicionales</span><span class="agua-total-num agua-t-trad">${tot.trad}<small> L/día</small></span></div>
+        <div class="agua-total-arrow" aria-hidden="true">→</div>
+        <div class="agua-total-col"><span class="agua-total-label">Eficientes</span><span class="agua-total-num agua-t-efic">${tot.efic}<small> L/día</small></span></div>
+        <div class="agua-total-save"><b>${ahorroDia} litros menos por día</b><span>≈ ${miles(Math.round(ahorroDia * 365 / 1000) * 1000)} litros al año</span></div>
+      </div>
+      <details class="agua-data">
+        <summary>Ver tabla de datos</summary>
+        <div class="table-wrap"><table class="ae-table">
+          <thead><tr>${t.headers.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead>
+          <tbody>
+            <tr class="grp"><td colspan="5">TRADICIONALES</td></tr>
+            ${t.tradicionales.map(row).join('')}
+            <tr class="tt-row"><td>TOTAL</td><td></td><td></td><td></td><td>${t.totalTradicionales}</td></tr>
+            <tr class="grp"><td colspan="5">EFICIENTES</td></tr>
+            ${t.eficientes.map(row).join('')}
+            <tr class="tt-row"><td>TOTAL</td><td></td><td></td><td></td><td>${t.totalEficientes}</td></tr>
+          </tbody>
+        </table></div>
+      </details>
+      <p class="caption">${withRefs(esc(t.caption)).replace(/\n/g, '<br>')}</p>
+    </div>`;
   }
 
   // ============================================================
@@ -273,7 +339,7 @@
       `<span class="cmp-limit" style="left:${v / max * 100}%"><i></i><b>${n}</b></span>`).join('')}</div>` : '';
 
     const legend = cfg.limits
-      ? 'Las líneas verticales marcan los valores máximos de K admitidos para los niveles A, B1, B y C de la tabla de la Introducción (región centro de Santa Fe). Cuanto más corta la barra, más aísla.'
+      ? 'Las líneas verticales marcan los valores máximos de K admitidos para los niveles A, B1, B y C de la tabla de la Introducción (región centro de Santa Fe; fuente: Norma IRAM 11605). Cuanto más corta la barra, más aísla.'
       : 'Cuanto más corta la barra, más aísla.';
 
     return `<p class="cmp-rank-title">Todos los sistemas ordenados de mayor a menor aislación</p>
@@ -318,22 +384,34 @@
   }
 
   // ---------- Intros / cierres de categoría ----------
+  // Bloque desplegable con el mismo aspecto que una subcategoría
+  function foldHTML(id, name, content, count) {
+    const open = state.open.has(id) ? ' open' : '';
+    return `<details class="group-section" id="${id}"${open}>
+      <summary class="group-summary">
+        <span class="group-name">${esc(name)}</span>
+        ${count ? `<span class="group-count">${esc(count)}</span>` : ''}
+        ${ARROW}
+      </summary>
+      <div class="group-content">${content}</div>
+    </details>`;
+  }
+
   function catIntroHTML(key) {
     if (state.query) return '';
     if (key === 'EV') {
       const c = ENVOLVENTES_COLOR;
-      return `<div class="cat-intro">
-        <p class="group-title-inline">Consideraciones generales</p>
+      return foldHTML(groupId('EV', 'Consideraciones generales'), 'Consideraciones generales', `<div class="cat-intro">
         <p>${c.p1}</p>
         <div class="vd-grid">
           <div class="vd-col color-oscuros"><h5>${c.oscuros.label} <small>${c.oscuros.sub}</small></h5><ul>${c.oscuros.items.map(i => `<li>${i}</li>`).join('')}</ul></div>
           <div class="vd-col color-claros"><h5>${c.claros.label} <small>${c.claros.sub}</small></h5><ul>${c.claros.items.map(i => `<li>${i}</li>`).join('')}</ul></div>
         </div>
-        <p>${c.p2}</p><p>${c.p3}</p>
-      </div>`;
+        <p>${withRefs(c.p2)}</p><p>${c.p3}</p>
+      </div>`, 'el color de la envolvente');
     }
     if (key === 'RH') {
-      return `<div class="cat-intro">${RH_INTRO.split('\n\n').map(p => `<p>${esc(p)}</p>`).join('')}</div>`;
+      return `<div class="cat-intro">${RH_INTRO.split('\n\n').map(p => `<p>${withRefs(esc(p))}</p>`).join('')}</div>`;
     }
     return '';
   }
@@ -341,9 +419,15 @@
   function catOutroHTML(key) {
     if (state.query) return '';
     if (key === 'EV') return comparatorHTML();
-    if (key === 'P') {
+    return '';
+  }
+
+  // Contenido extra al pie de una subcategoría (dentro de su desplegable)
+  function groupExtraHTML(catKey, name) {
+    if (state.query) return '';
+    if (catKey === 'P' && name === 'Vegetación') {
       const v = VEGETACION_EXTRA;
-      return `<div class="cat-intro">
+      return `<div class="cat-intro group-extra">
         <p>${esc(v.intro)}</p>
         <ul class="veg-list">${v.items.map(([b, t]) => `<li><b>${esc(b)}</b> ${esc(t)}</li>`).join('')}</ul>
         <p>${esc(v.cierre)}</p>
@@ -365,7 +449,8 @@
     // Avisos generales de la subcategoría: van al pie del grupo, debajo de las fichas.
     const notas = g.items.reduce((acc, s) => acc.concat(s.notas || []), []);
     const grid = `<div class="st-grid">${g.items.map(strategyHTML).join('')}</div>`
-      + (notas.length ? `<div class="group-notes">${notas.map(tipbox).join('')}</div>` : '');
+      + (notas.length ? `<div class="group-notes">${notas.map(n => n.html ? tipbox(n.html, n.icon, n.alt) : tipbox(n)).join('')}</div>` : '')
+      + groupExtraHTML(catKey, g.name);
     if (!g.name) return grid;
     const id = groupId(catKey, g.name);
     const open = state.query || state.open.has(id) ? ' open' : '';
@@ -469,7 +554,81 @@
     document.body.style.overflow = '';
   }
 
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeKModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeKModal(); hideRef(); } });
+
+  // ---------- Bibliografía y fuentes (al final de la página) ----------
+  function renderBiblio() {
+    const el = $('#bibliografia');
+    if (!el) return;
+    const entries = Object.entries(REFS);
+    const item = ([key, r]) => `<li id="ref-${key}">${linkify(r.html)}</li>`;
+    el.innerHTML = `<h2 class="section-title" id="biblio-title">BIBLIOGRAFÍA Y FUENTES</h2>
+      <p class="section-hint">Los asteriscos (<span class="ref-demo">*</span>) del manual remiten a estas referencias: pasá el mouse por encima para verlas.</p>
+      <ul class="biblio-list">${entries.filter(([, r]) => r.bib).map(item).join('')}</ul>
+      <h3 class="biblio-sub">Notas y fuentes complementarias</h3>
+      <ul class="biblio-list biblio-notes">${entries.filter(([, r]) => !r.bib).map(item).join('')}</ul>`;
+  }
+
+  // ---------- Ventana de referencia al pasar el mouse por un asterisco ----------
+  const refPop = document.createElement('div');
+  refPop.className = 'ref-pop';
+  refPop.id = 'ref-pop';
+  refPop.setAttribute('role', 'tooltip');
+  refPop.hidden = true;
+  document.body.appendChild(refPop);
+  let refHideTimer;
+  let refAnchor = null;
+  let refPinned = false;   // abierta con un clic/toque: no se cierra al sacar el mouse
+
+  function showRef(btn) {
+    const key = btn.dataset.ref;
+    const r = REFS[key];
+    if (!r) return;
+    clearTimeout(refHideTimer);
+    if (refAnchor !== btn) refPinned = false;
+    refAnchor = btn;
+    refPop.innerHTML = `<p class="ref-pop-kind">${r.bib ? 'Bibliografía' : 'Nota'}</p>
+      <p class="ref-pop-text">${linkify(r.html)}</p>
+      <a class="ref-pop-link" href="#ref-${key}">Ver en Bibliografía y fuentes ›</a>`;
+    refPop.hidden = false;
+    btn.setAttribute('aria-describedby', 'ref-pop');
+    // Posición: debajo del asterisco (o arriba si no entra), sin salirse de la pantalla
+    const b = btn.getBoundingClientRect();
+    const w = refPop.offsetWidth, h = refPop.offsetHeight;
+    const left = Math.min(Math.max(12, b.left + b.width / 2 - w / 2), window.innerWidth - w - 12);
+    const below = b.bottom + 8 + h < window.innerHeight;
+    refPop.style.left = `${left}px`;
+    refPop.style.top = `${below ? b.bottom + 8 : b.top - h - 8}px`;
+  }
+
+  function hideRef() {
+    clearTimeout(refHideTimer);
+    refPop.hidden = true;
+    if (refAnchor) refAnchor.removeAttribute('aria-describedby');
+    refAnchor = null;
+    refPinned = false;
+  }
+
+  const hideRefSoon = () => {
+    if (refPinned) return;
+    clearTimeout(refHideTimer);
+    refHideTimer = setTimeout(hideRef, 220);
+  };
+
+  document.addEventListener('mouseover', e => {
+    const btn = e.target.closest('.ref');
+    if (btn) showRef(btn);
+    else if (e.target.closest('#ref-pop')) clearTimeout(refHideTimer);
+  });
+  document.addEventListener('mouseout', e => {
+    if (e.target.closest('.ref, #ref-pop')) hideRefSoon();
+  });
+  document.addEventListener('focusin', e => {
+    const btn = e.target.closest('.ref');
+    if (btn) showRef(btn);
+    else if (!e.target.closest('#ref-pop')) hideRef();
+  });
+  window.addEventListener('scroll', () => { if (!refPop.hidden) hideRef(); }, { passive: true });
 
   // ---------- Navegación hacia categorías/subcategorías/estrategias colapsadas ----------
   function openAncestors(el) {
@@ -483,6 +642,17 @@
   }
 
   document.addEventListener('click', e => {
+    // Asterisco de referencia: en pantallas táctiles (sin hover) el toque abre/cierra la ventana
+    const refBtn = e.target.closest('.ref');
+    if (refBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (refAnchor === refBtn && refPinned) hideRef();
+      else { showRef(refBtn); refPinned = true; }
+      return;
+    }
+    if (!e.target.closest('#ref-pop')) hideRef();
+
     // Ventana flotante con la tabla de K admisible
     if (e.target.closest('[data-kmodal]')) {
       e.preventDefault();      // evita que el <summary> se despliegue
@@ -512,16 +682,17 @@
       return;
     }
 
-    const a = e.target.closest('a[href^="#cat-"], a[href^="#g-"], a[href^="#s-"], a[href^="#cmp-"], a[href^="#intro-"]');
+    const a = e.target.closest('a[href^="#cat-"], a[href^="#g-"], a[href^="#s-"], a[href^="#cmp-"], a[href^="#intro-"], a[href^="#ref-"]');
     if (!a) return;
     const target = document.querySelector(a.getAttribute('href'));
     if (!target) return;
     e.preventDefault();
     closeKModal();
+    hideRef();
     openAncestors(target.matches('details') ? target.parentElement : target);
     if (target.matches('details')) target.open = true;
     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    if (target.classList.contains('st-item')) {
+    if (target.classList.contains('st-item') || target.matches('.biblio-list li')) {
       target.classList.remove('flash');
       void target.offsetWidth;
       target.classList.add('flash');
@@ -538,5 +709,6 @@
 
   buildNavMenus();
   initKModal();
+  renderBiblio();
   render();
 })();

@@ -93,14 +93,14 @@ const STRATEGIES = [
     esp: '30cm', k: '1,81', iram: 'No cumple' },
   { code: 'EV06', cat: 'EV', group: 'Muro', title: 'Doble ladrillo común + cámara de aire 3cm',
     capas: ['Ladrillo cerámico macizo', 'Azotado hidrófugo', 'Cámara de aire 3cm', 'Ladrillo cerámico macizo', 'Revoque grueso', 'Revoque fino'],
-    esp: '33cm', k: '1,47', iram: 'Tipo C' },
+    esp: '33cm', k: '1,47', iram: 'Clase C' },
   { code: 'EV07', cat: 'EV', group: 'Muro', title: 'Ladrillo Hueco (18) + EIFS',
     capas: ['Revoque fino', 'Revoque grueso', 'Ladrillo hueco 18 cm', 'Azotado hidrófugo', 'Base coat', 'Placa EPS 25mm', 'Base coat y finish'],
-    esp: '25cm', k: '0,8', iram: 'Tipo B' },
+    esp: '25cm', k: '0,8', iram: 'Clase B' },
   { code: 'EV08', cat: 'EV', group: 'Muro', title: 'Steel Framing',
     capas: ['Placa de yeso', 'Montante PGC 100', 'Lana de vidrio 100mm', 'Placa OSB', 'Barrera de agua y viento', 'Placa EPS 20mm', 'Base coat y finish'],
-    esp: '15cm', k: '0,3', iram: 'Tipo A',
-    tip: 'Una pared de Steel Framing aisla 9 veces más que una de ladrillo común de similar espesor.' },
+    esp: '15cm', k: '0,3', iram: 'Clase A',
+    tip: 'Una pared de Steel Framing aisla 9 veces más que una de ladrillo común de similar espesor.[*nota-k]' },
   { code: 'EV09', cat: 'EV', group: 'Cubierta', title: 'Losa de hormigón armado (S/Aislación)',
     capas: ['Losa de hormigón armado 0,10 m', 'Film de polietileno', 'Contrapiso', 'Carpeta niveladora impermeable', 'Membrana hidrófuga'],
     esp: '20cm', k: '2,69', iram: 'No cumple' },
@@ -109,16 +109,16 @@ const STRATEGIES = [
     esp: '31cm', k: '2,43', iram: 'No cumple' },
   { code: 'EV11', cat: 'EV', group: 'Cubierta', title: 'Chapa + 5 Cm lana de vidrio',
     capas: ['Placa de roca de yeso', 'Lana de vidrio 5 cm + barrera de vapor', 'Cámara de aire (30 cm)', 'Chapa sinusoidal'],
-    esp: '36cm', k: '0,6', iram: 'Tipo B' },
+    esp: '36cm', k: '0,6', iram: 'Clase B' },
   { code: 'EV12', cat: 'EV', group: 'Cubierta', title: 'Chapa + (10+5) Cm lana de vidrio',
     capas: ['Placa roca de yeso', 'Lana de vidrio 10 cm + barrera de vapor', 'Placa rigidizadora OSB', 'Barrera de viento y agua Tyvek', 'Lana de vidrio (5 cm)', 'Chapa sinusoidal'],
-    esp: '18cm', k: '0,34', iram: 'Tipo B' },
+    esp: '18cm', k: '0,34', iram: 'Clase B' },
   { code: 'EV13', cat: 'EV', group: 'Cubierta', title: 'Plana Steel Deck + aislación interior',
     capas: ['Placa roca de yeso', 'Lana de vidrio 5 cm + barrera de vapor', 'Chapa encofrado perdido', 'Capa de compresión', 'Contrapiso alivianado perlas EPS (5 cm)', 'Carpeta hidrófuga', 'Piso cerámico'],
-    esp: '48cm', k: '0,34', iram: 'Tipo B' },
+    esp: '48cm', k: '0,34', iram: 'Clase B' },
   { code: 'EV14', cat: 'EV', group: 'Cubierta', title: 'Chapa + 10 Cm lana de vidrio',
     capas: ['Placa de roca de yeso', 'Lana de vidrio 10 cm', 'Cámara de aire (30 cm)', 'Chapa'],
-    esp: '41cm', k: '0,34', iram: 'Tipo B' },
+    esp: '41cm', k: '0,34', iram: 'Clase B' },
   { code: 'EV15', cat: 'EV', group: 'Aventanamientos - consideraciones generales', title: 'CONTROL DE SUPERFICIE VIDRIADA',
     text: 'Regular la proporción entre vidrio y muro según orientación. Se debe disminuir la superficie vidriada evitando pérdidas térmicas.' },
   { code: 'EV16', cat: 'EV', group: 'Aventanamientos - consideraciones generales', title: 'CONTROL DE INFILTRACIONES',
@@ -136,14 +136,14 @@ const STRATEGIES = [
   { code: 'EV21', cat: 'EV', group: 'Aventanamientos - vidriado', title: 'DOBLE VIDRIADO HERMÉTICO (DVH) LOW-E 4+12+4',
     text: 'Incorporar vidrios con tratamiento de baja emisividad (Low-E) para máxima protección frente a la radiación reflejando el calor y mejorando la aislación.',
     kdato: 'K=1,7 (W/m²K)',
-    tip: 'La relación área ventana/muro óptima es de <b>40% de superficie vidriada hacia la orientación norte</b>, mientras que para el resto de las orientaciones es recomendable <b>no superar el 10%</b>.' },
+    tip: 'La relación área ventana/muro óptima es de <b>40% de superficie vidriada hacia la orientación norte</b>[*dacunda], mientras que para el resto de las orientaciones es recomendable <b>no superar el 10%</b>.' },
   { code: 'EV22', cat: 'EV', group: 'Aventanamientos - marco', title: 'ALUMINIO SIN RPT',
     text: 'Evitar su uso en espacios habitables por ser un metal altamente conductor y carecer de barreras térmicas, transmitiendo directamente el frío exterior y puede producir condensación.' },
   { code: 'EV23', cat: 'EV', group: 'Aventanamientos - marco', title: 'ALUMINIO RPT',
     text: 'Incorporar RPT en espacios comunes o de presupuesto intermedio, para cortar la transmisión de temperatura, eliminando la condensación superficial y mejorando el confort higrotérmico.' },
   { code: 'EV24', cat: 'EV', group: 'Aventanamientos - marco', title: 'PVC',
     text: 'Incorporar marco de PVC, para el máximo rendimiento térmico y acústico. Priorizar su uso en dormitorios y orientaciones desfavorables.',
-    tip: 'La utilización de DVH y persianas exteriores de PVC pueden <b>mejorar un 600%</b> el rendimiento de una ventana con vidriado simple.' },
+    tip: 'La utilización de DVH y persianas exteriores de PVC pueden <b>mejorar un 600%</b>[*nota-dvh] el rendimiento de una ventana con vidriado simple.' },
 
   // ============ 04 | SISTEMAS DE CONTROL Y PROTECCIÓN [P] ============
   { code: 'P01', cat: 'P', group: 'Horizontal', title: 'ALERO',
@@ -201,7 +201,21 @@ const STRATEGIES = [
         ['Lavarropas', '0,4v / 0,4v', '20 L/carga', '20'],
       ],
       totalEficientes: '137',
-      caption: 'Tabla 1: Consumo de artefactos, tradicionales vs eficientes.\nFuente: Barreneche R. (2017). Elaboración: Propia',
+      caption: 'Tabla 1: Consumo de artefactos, tradicionales vs eficientes.\nFuente: Barreneche R. (2017)[*barreneche]. Elaboración: Propia',
+      // Misma tabla, emparejada artefacto por artefacto para el gráfico comparativo.
+      // "dia" = litros por día entero. El inodoro eficiente suma sus dos descargas.
+      pares: [
+        { artefacto: 'Ducha', mejora: 'de caudal limitado',
+          trad: { unidad: '10 L/min', dia: 60 }, efic: { unidad: '6 L/min', dia: 36 } },
+        { artefacto: 'Griferías baño', mejora: 'con aireadores',
+          trad: { unidad: '7 L/min', dia: 35 }, efic: { unidad: '3 L/min', dia: 15 } },
+        { artefacto: 'Griferías cocina', mejora: 'con aireadores',
+          trad: { unidad: '8 L/min', dia: 64 }, efic: { unidad: '6 L/min', dia: 48 } },
+        { artefacto: 'Inodoro', mejora: 'de doble descarga',
+          trad: { unidad: '8 L/descarga', dia: 40 }, efic: { unidad: '3 L y 6 L/descarga', dia: 18 } },
+        { artefacto: 'Lavarropas', mejora: 'eficiente',
+          trad: { unidad: '100 L/carga', dia: 100 }, efic: { unidad: '20 L/carga', dia: 20 } },
+      ],
     } },
   { code: 'AE02', cat: 'AE', group: '', title: 'TECNOLOGÍA INVERTER',
     text: 'Priorizar la utilización de estos equipos para eliminar los picos de consumo eléctrico producidos durante los arranque del motor y mantener una estabilidad térmica constante. Reduciendo el consumo energético entre un 35-50%, aumentan el confort y la vida útil.' },
@@ -240,11 +254,14 @@ const STRATEGIES = [
   { code: 'ER03', cat: 'ER', group: 'Energía Fotovoltaica y solar', title: 'TERMOTANQUE SOLAR',
     text: 'Aprovechar la energía solar para el calentamiento de agua de uso sanitario, calefacción y acondicionamiento térmico de piscinas.',
     // "notas": avisos generales de la subcategoría. Se renderizan al pie del grupo
-    // (debajo de la línea de las fichas), no dentro de la ficha.
+    // (debajo de la línea de las fichas), no dentro de la ficha. "icon" reemplaza al foquito.
     notas: [
-      'En la provincia de Santa Fe existe un programa llamado <b>“Prosumidores”</b> que permite generar energía renovable para auto consumo y vender la producción de energía excedente a la Empresa Provincial de la Energía (EPE). Además ofrecen reconocimientos económicos y créditos de inversión para la transición energética de energías renovables',
-      'Los <b>paneles solares</b> buscan aprovechar la mayor cantidad de radiación durante todo el año. Se recomienda orientación norte, y una <b>inclinación de 32°</b> (próxima a la latitud local).',
-      'Los <b>termotanques</b> buscan garantizar el suministro en la época desfavorable (invierno) y prevenir riesgos operativos por sobretemperatura en verano. Se recomienda orientación norte, y una <b>inclinación de 45°</b>.',
+      { icon: 'assets/er/prosumidores.png', alt: 'Prosumidores',
+        html: 'En la provincia de Santa Fe existe un programa llamado <b>“Prosumidores”</b> que permite generar energía renovable para auto consumo y vender la producción de energía excedente a la Empresa Provincial de la Energía (EPE). Además ofrecen reconocimientos económicos y créditos de inversión para la transición energética de energías renovables' },
+      { icon: 'assets/er/paneles.png', alt: 'Panel solar con 32° de inclinación',
+        html: 'Los <b>paneles solares</b> buscan aprovechar la mayor cantidad de radiación durante todo el año. Se recomienda orientación norte, y una <b>inclinación de 32°</b> (próxima a la latitud local).' },
+      { icon: 'assets/er/termotanques.png', alt: 'Termotanque solar con 45° de inclinación',
+        html: 'Los <b>termotanques</b> buscan garantizar el suministro en la época desfavorable (invierno) y prevenir riesgos operativos por sobretemperatura en verano. Se recomienda orientación norte, y una <b>inclinación de 45°</b>.' },
     ] },
 
   // ============ 08 | GESTIÓN DEL RECURSO HÍDRICO [RH] ============
@@ -254,7 +271,7 @@ const STRATEGIES = [
     text: 'Reutilizar aguas negras (inodoro), posterior a un tratamiento complejo, para uso de riego.' },
   { code: 'RH03', cat: 'RH', group: '', title: 'APROVECHAMIENTO DE AGUA DE LLUVIA',
     text: 'Almacenar agua de las cubiertas y utilizarla para lavar ropa, descargar inodoros, limpieza de pisos o regar.',
-    tip: 'Reutilizando agua de lluvia, en una cubierta de 100 m2 podemos captar <b>90.000 litros de agua</b> anuales, ésto equivale a 41 descargas de inodoro diarias durante todo un año.' },
+    tip: 'Reutilizando agua de lluvia, en una cubierta de 100 m2 podemos captar <b>90.000 litros de agua</b> anuales, ésto equivale a 41 descargas de inodoro diarias durante todo un año.[*nota-lluvia]' },
 ];
 
 // Texto introductorio de la sección Vegetación (04 | P)
@@ -268,7 +285,7 @@ const VEGETACION_EXTRA = {
     ['Confort psicológico:', 'Estimula el bienestar psicofísico de los usuarios a través de la integración biofílica con el paisaje.'],
   ],
   cierre: 'El uso prioritario de especies nativas actúa como un vector ecológico y cultural que preserva la biodiversidad local, restaura el paisaje original y demanda un menor mantenimiento hídrico en el territorio.',
-  tip: 'Algunas <b>especies recomendadas</b> para viviendas en nuestra ecorregión son el Ñangapirí, Palo Jabón, Tala, Sangre de Drago, Espinillo, Jacarandá, Lapacho Amarillo y Curupi.',
+  tip: 'Algunas <b>especies recomendadas</b>[*broda] para viviendas en nuestra ecorregión son el Ñangapirí, Palo Jabón, Tala, Sangre de Drago, Espinillo, Jacarandá, Lapacho Amarillo y Curupi.',
 };
 
 // Intro de la sección 03 | Envolventes (consideraciones generales sobre color)
@@ -278,11 +295,32 @@ const ENVOLVENTES_COLOR = {
     items: ['Absorben una mayor proporción de la radiación solar.', 'Alcanzan temperaturas superficiales más elevadas.', 'Incrementan la transferencia de calor hacia el interior.', 'Pueden ser beneficiosos en climas fríos donde se busca aprovechar la ganancia solar.'] },
   claros: { label: 'Colores claros', sub: '(blanco, beige, gris claro)',
     items: ['Reflejan gran parte de la radiación solar.', 'Mantienen temperaturas superficiales más bajas.', 'Reducen las ganancias térmicas hacia el interior.', 'Son especialmente útiles en climas cálidos.'] },
-  p2: 'Estudios han demostrado que las cubiertas claras pueden presentar temperaturas superficiales entre 20 y 30°C inferiores que cubiertas oscuras expuestas a las mismas condiciones de radiación solar.',
+  p2: 'Estudios han demostrado[*frei] que las cubiertas claras pueden presentar temperaturas superficiales entre 20 y 30°C inferiores que cubiertas oscuras expuestas a las mismas condiciones de radiación solar.',
   p3: 'En la cubierta es donde el color tiene mayor impacto, porque reciben la mayor cantidad de radiación, aunque los muros también se ven altamente afectados. En ambos casos, para nuestra región es siempre recomendable utilizar colores claros.',
 };
 
 // Intro de la sección 08 | RH
-const RH_INTRO = 'Según la subsecretaría de Ambiente y Desarrollo Sustentable de la nación, en Argentina, el consumo doméstico de agua es en promedio de 318 litros por habitante por día. Esto significa un 83% más que la media latinoamericana y 6,3 veces más que los estándares fijados por la OMS.\n\nLas siguientes estrategias contribuyen a disminuir considerablemente el consumo';
+const RH_INTRO = 'Según la subsecretaría de Ambiente y Desarrollo Sustentable de la nación, en Argentina, el consumo doméstico de agua es en promedio de 318 litros por habitante por día. Esto significa un 83% más que la media latinoamericana y 6,3 veces más que los estándares fijados por la OMS.[*gonzalez]\n\nLas siguientes estrategias contribuyen a disminuir considerablemente el consumo';
+
+// Referencias del ANEXO I (notas al pie 1-13 del PDF + bibliografía final).
+// En cualquier texto, "[*clave]" se convierte en un asterisco que muestra la
+// referencia al pasar el mouse. bib: true = figura en "Bibliografía"; si no, es
+// una nota o fuente complementaria. El orden de la lista es el del PDF.
+const REFS = {
+  bardou: { bib: true, html: 'Bardou, P. y Arzoumanian V. (1981). <i>Sol y Arquitectura.</i> Gustavo Gili.' },
+  czajkowski: { bib: true, html: 'Czajkowski J.D. y Gómez, A. F. (2009). <i>Arquitectura sustentable.</i> Colección: Herramientas para Arquitectos. AGEA.' },
+  iram11601: { bib: true, html: 'Instituto Argentino de Normalización y Certificación (IRAM) (2002). <i>Acondicionamiento térmico de edificios. Propiedades térmicas de los componentes y elementos de construcción en régimen estacionario.</i> (IRAM 11601:2002). IRAM.' },
+  puig: { bib: true, html: 'Puig, S. E. (2023) Estrategias de intervención tecnológica. <i>Evaluación del desempeño energético en viviendas sociales de la Provincia de Santa Fe.</i> [Tesis de Maestría, Universidad Nacional del Litoral, Facultad de Arquitectura, Diseño y Urbanismo]. Biblioteca Virtual UNL. https://hdl.handle.net/11185/7642' },
+  frei: { bib: true, html: 'Frei, A. (2023). Thermal properties of green, white, and other roofing materials, and solar insolation: A case study in New York City. <i>Building and Environment, 244</i>, 110842. https://doi.org/10.1016/j.buildenv.2023.110842' },
+  dacunda: { bib: true, html: 'Dacunda, M. (2024). <i>Evaluación de la eficiencia energética de edificios residenciales : recomendaciones y propuestas de mejoras.</i> [Proyecto Final de Carrera, Universidad Tecnológica Nacional, Facultad Regional Santa Fe]. Repositorio Institucional Abierto (RIA-UTN). https://hdl.handle.net/20.500.12272/11854' },
+  barreneche: { bib: true, html: 'Barreneche, R. O. (2017). <i>Instalaciones Sanitarias Sostenibles.</i> Diseño Editorial.' },
+  gonzalez: { bib: true, html: 'González Calderón, J. (2019). <i>Manual de vivienda sustentable.</i> Ministerio de Interior, Obras Públicas y Vivienda. Secretaría de ambiente y desarrollo sustentable. Secretaría de Energía. Presidencia de la Nación Argentina.' },
+
+  'resolucion-pronev': { html: 'Resolución N°5/2023 de la Secretaría de Energía del Ministerio de Economía.' },
+  'nota-k': { html: 'Considerando los valores de transmitancia térmica (K) mencionados anteriormente.' },
+  'nota-dvh': { html: 'Considerando un vidrio simple de K= 5,8 W/m²K y un paquete de Ventana, DVH y persiana de 15 mm con poliuretano de alta densidad, K= 0,97 W/m²K.' },
+  broda: { html: 'Colaboración personal del ingeniero agrónomo Ruben Broda.' },
+  'nota-lluvia': { html: 'Considerando un régimen pluviométrico aproximado de 1000 mm anuales, precipitación media anual de los últimos diez años (2016-2025). Datos meteorológicos del CIM FICH UNL. Recuperado de http://wfich1.unl.edu.ar/cim/datos-meteorologicos el 12 de enero de 2026.' },
+};
 
 
