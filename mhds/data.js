@@ -1,4 +1,4 @@
-// Contenido literal del ANEXO I: MANUAL DE HERRAMIENTAS SOSTENIBLES
+// Contenido literal del ANEXO I: MANUAL DE HERRAMIENTAS DE DISEÑO SOSTENIBLE
 // "Estrategias proyectuales para la eficiencia energética en viviendas unifamiliares:
 //  bases para un manual abierto de buenas prácticas. Caso: San Carlos Centro."
 // Tesis de graduación FADU|UNL — Dona Luciano | Ramira Camila
