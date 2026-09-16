@@ -799,7 +799,7 @@ mark { background: #ffe89a; border-radius: 3px; padding: 0 1px; }
 .sl-item p { font-size: clamp(.95rem, 1.5vw, 1.32rem); line-height: 1.4; color: var(--ink-soft); }
 .sl-items-balde { grid-template-columns: repeat(2, 1fr); gap: clamp(16px, 3vw, 46px); }
 .sl-items-balde .sl-item img { max-height: min(30vh, 270px); margin-bottom: 14px; }
-.sl-items-balde .sl-item { text-align: center; }
+.sl-items-balde .sl-item { text-align: center; border-top: none; padding-top: 0; }
 
 /* Diapositiva partida: contenido a la izquierda, figura a la derecha */
 .sl-split { display: grid; grid-template-columns: 1.15fr .85fr; gap: clamp(22px, 3.5vw, 52px); align-items: center; margin-top: clamp(18px, 2.4vw, 30px); }

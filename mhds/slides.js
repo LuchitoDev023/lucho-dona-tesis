@@ -57,12 +57,12 @@
       ] },
 
     // ---------- 05 ----------
-    { block: '05', kicker: '05 · PRINCIPIO BÁSICO', title: 'La vivienda es un balde',
-      lead: 'Las <b>pérdidas térmicas</b> son los agujeros; la <b>energía</b>, el agua de la canilla.',
+    { block: '05', kicker: '05 · PRINCIPIO BÁSICO', title: 'Primero, reducir las pérdidas',
+      lead: 'Si la vivienda fuera un balde, las <b>pérdidas térmicas</b> serían los agujeros y la <b>energía</b>, el agua de la canilla.',
       variant: 'balde',
       items: [
-        { img: 'assets/intro/balde-1.png', h: 'Con agujeros', t: 'Nunca se llena, por más que abramos la canilla.' },
-        { img: 'assets/intro/balde-2.png', h: 'Sano', t: 'Con la envolvente resuelta, cada aporte rinde.' },
+        { img: 'assets/intro/balde-1.png', h: 'Con pérdidas', t: 'Nunca se llena, por más que abramos la canilla.' },
+        { img: 'assets/intro/balde-2.png', h: 'Envolvente resuelta', t: 'Cada aporte de energía rinde.' },
       ],
       note: 'Primero tapar los agujeros. Después, abrir la canilla.' },
 
