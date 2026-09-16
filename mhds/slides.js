@@ -89,6 +89,7 @@
       layout: 'split',
       lead: 'Una <b>escala comparativa</b> del desempeño energético de la vivienda, como la de los electrodomésticos.',
       figure: 'assets/intro/etiqueta.jpg',
+      figureLink: 'https://etiquetadoviviendas.mecon.gob.ar/',
       items: [
         { h: 'IRAM 11900', t: 'Define el método de cálculo.' },
         { h: 'Ley 13903/19', t: 'Impulsa la adhesión de los municipios en Santa Fe.' },
@@ -159,7 +160,9 @@
     const badges = s.badges ? `<div class="sl-badges">${s.badges.map(b =>
       `<a href="https://www.un.org/sustainabledevelopment/es/${b.slug}/" target="_blank" rel="noopener" title="ODS ${b.n}: ${b.t}">
          <img src="assets/intro/ods-${b.n}.jpg" alt="ODS ${b.n}: ${b.t}" loading="lazy"></a>`).join('')}</div>` : '';
-    const figure = s.figure ? `<div class="sl-figure"><img src="${s.figure}" alt="" loading="lazy"></div>` : '';
+    const figImg = s.figure ? `<img src="${s.figure}" alt="" loading="lazy">` : '';
+    const figure = s.figure ? `<div class="sl-figure">${s.figureLink
+      ? `<a href="${s.figureLink}" target="_blank" rel="noopener" title="Abrir el sitio oficial">${figImg}</a>` : figImg}</div>` : '';
     const big = s.big ? `<p class="sl-big">${s.big}</p>` : '';
     const table = s.table ? `<table class="sl-table">
       <thead><tr><th>Nivel</th><th>Muro<br><small>condición invierno</small></th><th>Cubierta<br><small>condición verano</small></th></tr></thead>
@@ -238,7 +241,8 @@
     else if (e.key === 'End') go(SLIDES.length - 1);
   });
 
-  // Botón general + un botón por bloque de la Introducción
+  // Un único botón, al final de la línea "Tocá cada bloque para desplegarlo":
+  // inicia en la primera diapositiva y recorre todos los puntos.
   function initTriggers() {
     const hint = document.querySelector('#introduccion .section-hint');
     if (hint) {
@@ -251,18 +255,6 @@
       btn.textContent = '▶';
       hint.appendChild(btn);   // discreto, al final de la línea de ayuda
     }
-    document.querySelectorAll('#introduccion .intro-block > summary').forEach(sum => {
-      const num = sum.querySelector('.intro-num');
-      if (!num || !SLIDES.some(s => s.block === num.textContent.trim())) return;
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'present-btn';
-      b.setAttribute('data-slides', num.textContent.trim());
-      b.title = 'Ver como diapositiva';
-      b.setAttribute('aria-label', 'Ver este bloque como diapositiva');
-      b.textContent = '▶';
-      sum.appendChild(b);
-    });
   }
 
   // El script se carga al final del <body>, así que la Introducción ya está parseada.

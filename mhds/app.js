@@ -79,9 +79,14 @@
   const linkify = html => html.replace(/(https?:\/\/[^\s<]+[^\s<.,;)])/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
 
   // Recuadro de dato/tip: foquito por defecto, o el gráfico propio de la nota si lo tiene
-  const tipbox = (html, icon, alt) => `<div class="tipbox${icon ? ' tipbox-img' : ''}">${icon
-    ? `<img class="tip-img" src="${icon}" alt="${esc(alt || '')}" loading="lazy">`
-    : '<span class="tip-icon" aria-hidden="true">💡</span>'}<p>${withRefs(html)}</p></div>`;
+  // (con "link", el gráfico abre esa página en otra pestaña)
+  const tipbox = (html, icon, alt, link) => {
+    const img = icon ? `<img class="tip-img" src="${icon}" alt="${esc(alt || '')}" loading="lazy">` : '';
+    const media = !icon ? '<span class="tip-icon" aria-hidden="true">💡</span>'
+      : link ? `<a class="tip-img-link" href="${link}" target="_blank" rel="noopener" title="${esc(alt || '')} — sitio oficial">${img}</a>`
+      : img;
+    return `<div class="tipbox${icon ? ' tipbox-img' : ''}">${media}<p>${withRefs(html)}</p></div>`;
+  };
 
   const iramClass = v => v === 'No cumple' ? 'iram-no' : v === 'Clase A' ? 'iram-a' : v === 'Clase B' ? 'iram-b' : 'iram-c';
 
@@ -449,7 +454,7 @@
     // Avisos generales de la subcategoría: van al pie del grupo, debajo de las fichas.
     const notas = g.items.reduce((acc, s) => acc.concat(s.notas || []), []);
     const grid = `<div class="st-grid">${g.items.map(strategyHTML).join('')}</div>`
-      + (notas.length ? `<div class="group-notes">${notas.map(n => n.html ? tipbox(n.html, n.icon, n.alt) : tipbox(n)).join('')}</div>` : '')
+      + (notas.length ? `<div class="group-notes">${notas.map(n => n.html ? tipbox(n.html, n.icon, n.alt, n.link) : tipbox(n)).join('')}</div>` : '')
       + groupExtraHTML(catKey, g.name);
     if (!g.name) return grid;
     const id = groupId(catKey, g.name);

@@ -256,7 +256,7 @@ const STRATEGIES = [
     // "notas": avisos generales de la subcategoría. Se renderizan al pie del grupo
     // (debajo de la línea de las fichas), no dentro de la ficha. "icon" reemplaza al foquito.
     notas: [
-      { icon: 'assets/er/prosumidores.png', alt: 'Prosumidores',
+      { icon: 'assets/er/prosumidores.png', alt: 'Programa Prosumidores de Santa Fe', link: 'https://www.santafe.gob.ar/ms/prosumidores/',
         html: 'En la provincia de Santa Fe existe un programa llamado <b>“Prosumidores”</b> que permite generar energía renovable para auto consumo y vender la producción de energía excedente a la Empresa Provincial de la Energía (EPE). Además ofrecen reconocimientos económicos y créditos de inversión para la transición energética de energías renovables' },
       { icon: 'assets/er/paneles.png', alt: 'Panel solar con 32° de inclinación',
         html: 'Los <b>paneles solares</b> buscan aprovechar la mayor cantidad de radiación durante todo el año. Se recomienda orientación norte, y una <b>inclinación de 32°</b> (próxima a la latitud local).' },

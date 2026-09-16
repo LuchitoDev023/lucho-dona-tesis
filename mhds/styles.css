@@ -141,6 +141,10 @@ img { max-width: 100%; }
   background: #fff;
 }
 .etiqueta-img { max-height: 330px; }
+.etiqueta-link { display: block; width: max-content; max-width: 100%; margin: 0 auto; border-radius: 10px; transition: transform .15s ease; }
+.etiqueta-link .intro-figure { margin: 16px 0 6px; }
+.etiqueta-link:hover { transform: translateY(-3px); }
+.etiqueta-link:focus-visible { outline: 3px solid var(--sage); outline-offset: 3px; }
 
 .concept-grid, .pa-grid { display: grid; gap: 12px; margin: 14px 0; }
 .concept-grid { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
@@ -529,6 +533,9 @@ table { border-collapse: collapse; width: 100%; font-size: .93rem; background: #
 /* ---------- Recuadros con gráfico propio (ER03) ---------- */
 .tipbox-img { align-items: center; }
 .tip-img { width: 86px; height: auto; flex-shrink: 0; mix-blend-mode: multiply; }
+.tip-img-link { display: block; flex-shrink: 0; line-height: 0; border-radius: 10px; transition: transform .15s ease; }
+.tip-img-link:hover { transform: scale(1.08); }
+.tip-img-link:focus-visible { outline: 3px solid var(--c, var(--sage)); outline-offset: 3px; }
 
 /* Contenido extra al pie de una subcategoría (Vegetación) */
 .group-extra { margin-top: 20px; }
@@ -716,13 +723,6 @@ mark { background: #ffe89a; border-radius: 3px; padding: 0 1px; }
   transition: background .15s ease, transform .15s ease;
 }
 .present-btn:hover { background: rgba(255,255,255,.34); transform: scale(1.12); }
-
-/* En los encabezados blancos de la Introducción: mismos colores que el resto de la web */
-.intro-block summary .present-btn {
-  margin-left: auto; border-color: var(--line); background: #f4f6f3; color: var(--sage);
-}
-.intro-block summary .present-btn:hover { border-color: var(--sage); background: var(--sage); color: #fff; }
-.intro-block summary:has(.present-btn)::after { margin-left: 4px; }
 
 .present-btn-main {
   width: 26px; height: 26px; flex-shrink: 0; margin-left: 0;
