@@ -241,8 +241,9 @@
     else if (e.key === 'End') go(SLIDES.length - 1);
   });
 
-  // Un único botón, al final de la línea "Tocá cada bloque para desplegarlo":
-  // inicia en la primera diapositiva y recorre todos los puntos.
+  // Botón general al final de la línea "Tocá cada bloque para desplegarlo"
+  // (inicia en la primera diapositiva) + un ▶ discreto junto al "+" de cada
+  // bloque, que abre la presentación en ese tema.
   function initTriggers() {
     const hint = document.querySelector('#introduccion .section-hint');
     if (hint) {
@@ -255,6 +256,19 @@
       btn.textContent = '▶';
       hint.appendChild(btn);   // discreto, al final de la línea de ayuda
     }
+    document.querySelectorAll('#introduccion .intro-block > summary').forEach(sum => {
+      const num = sum.querySelector('.intro-num');
+      const block = num && num.textContent.trim();
+      if (!block || !SLIDES.some(s => s.block === block)) return;
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'present-btn present-btn-block';
+      b.setAttribute('data-slides', block);
+      b.title = 'Ver en modo presentación';
+      b.setAttribute('aria-label', `Ver el punto ${block} en modo presentación`);
+      b.textContent = '▶';
+      sum.appendChild(b);    // queda justo antes del "+" (que es el ::after del summary)
+    });
   }
 
   // El script se carga al final del <body>, así que la Introducción ya está parseada.

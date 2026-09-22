@@ -731,6 +731,17 @@ mark { background: #ffe89a; border-radius: 3px; padding: 0 1px; }
 }
 .present-btn-main:hover { opacity: 1; border-color: var(--sage); background: var(--sage); color: #fff; }
 
+/* ▶ de cada bloque: discreto, pegado al "+" del desplegable */
+.present-btn-block {
+  width: 22px; height: 22px; margin-left: auto; font-size: .5rem;
+  border: 1px solid var(--line); background: transparent; color: var(--sage-light);
+  opacity: .7;
+}
+.present-btn-block:hover, .present-btn-block:focus-visible {
+  opacity: 1; border-color: var(--sage); background: var(--sage); color: #fff; transform: none;
+}
+.intro-block summary:has(.present-btn-block)::after { margin-left: 2px; }
+
 /* Capa */
 .slides {
   position: fixed; inset: 0; z-index: 300;
