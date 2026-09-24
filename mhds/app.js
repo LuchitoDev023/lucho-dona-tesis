@@ -774,12 +774,14 @@ K = 1 / R<sub>total</sub></pre>
   function renderBiblio() {
     const el = $('#biblio-body');
     if (!el) return;
-    const entries = Object.entries(REFS);
-    const item = ([key, r]) => `<li id="ref-${key}">${linkify(r.html)}</li>`;
-    el.innerHTML = `<p class="biblio-hint">Los asteriscos (<span class="ref-demo">*</span>) del manual remiten a estas referencias: pasá el mouse por encima para verlas.</p>
-      <ul class="biblio-list">${entries.filter(([, r]) => r.bib).map(item).join('')}</ul>
+    const notas = Object.entries(REFS).filter(([, r]) => !r.bib);
+    // Las entradas que algún asterisco señala llevan su id, para que el enlace
+    // "Ver en Bibliografía y fuentes" caiga justo en esa referencia.
+    const item = b => `<li${b.ref ? ` id="ref-${b.ref}"` : ''}>${linkify(b.html)}</li>`;
+    el.innerHTML = `<p class="biblio-hint">Bibliografía y fuentes de la tesis. Los asteriscos (<span class="ref-demo">*</span>) del manual remiten a estas referencias: pasá el mouse por encima para verlas.</p>
+      <ul class="biblio-list">${BIBLIOGRAFIA.map(item).join('')}</ul>
       <h3 class="biblio-sub">Notas y fuentes complementarias</h3>
-      <ul class="biblio-list biblio-notes">${entries.filter(([, r]) => !r.bib).map(item).join('')}</ul>`;
+      <ul class="biblio-list biblio-notes">${notas.map(([key, r]) => `<li id="ref-${key}">${linkify(r.html)}</li>`).join('')}</ul>`;
   }
 
   // ---------- Ventana de referencia al pasar el mouse por un asterisco ----------
