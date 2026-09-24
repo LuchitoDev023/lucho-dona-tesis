@@ -174,19 +174,23 @@
 </main>
 
 <footer class="footer">
-  <p>ANEXO I: MANUAL DE HERRAMIENTAS DE DISEÑO SOSTENIBLE · Tesis de graduación FADU|UNL</p>
+  <button type="button" class="about-btn" data-about>Sobre éste manual</button>
+</footer>
 
-  <details class="about-fold" id="sobre-el-manual">
-    <summary>Sobre este manual</summary>
+<!-- ============ Ventana flotante: sobre éste manual ============ -->
+<div class="kmodal" id="about-modal" hidden>
+  <div class="kmodal-box about-box" role="dialog" aria-modal="true" aria-labelledby="about-title">
+    <button class="kmodal-close" id="about-close" aria-label="Cerrar">✕</button>
+    <p class="kmodal-title" id="about-title">Sobre éste manual</p>
     <div class="about-body">
       <p>Este manual fue desarrollado por <a href="https://lucho-dona-arquitecto.vercel.app/" target="_blank" rel="noopener">Luciano Dona</a> y <a href="https://www.instagram.com/crramira.arq/" target="_blank" rel="noopener">Camila Ramira</a> dentro del marco de la tesis de graduación de la Facultad de Arquitectura, Diseño y Urbanismo de la Universidad Nacional del Litoral, Santa Fe, Argentina.</p>
-      <p>La tesis de grado titulada <i>“Estrategias proyectuales para la eficiencia energética en viviendas unifamiliares: Bases para un manual abierto de buenas prácticas. Caso: San Carlos Centro”</i> fue dirigida por Mg. Arq. María Raquel Gutiérrez Garigliano y co-dirigida por Mg. Arq. María Victoria Alconchel.</p>
+      <p>La tesis de grado titulada <a class="about-tesis" href="https://www.researchgate.net/publication/414717846_Estrategias_proyectuales_para_la_eficiencia_energetica_en_viviendas_unifamiliares_Bases_para_un_manual_abierto_de_buenas_practicas_Caso_San_Carlos_Centro?channel=doi&amp;linkId=6ab5262bb43d142169cf8261&amp;showFulltext=true" target="_blank" rel="noopener"><b>“Estrategias proyectuales para la eficiencia energética en viviendas unifamiliares: Bases para un manual abierto de buenas prácticas. Caso: San Carlos Centro”</b></a> fue dirigida por Mg. Arq. María Raquel Gutiérrez Garigliano y co-dirigida por Mg. Arq. María Victoria Alconchel.</p>
       <p>Las estrategias que se recomiendan en el MHDS —resultado de un arduo proceso de análisis, clasificación y evaluación de antecedentes proyectuales y bibliográficos— son aplicables a la región centro de la provincia de Santa Fe o zonas templadas-cálidas de similares características climáticas.</p>
       <p>La versión original se encuentra en formato PDF disponible en el Anexo I: Manual de Herramientas de Diseño Sostenible.</p>
       <p>La versión web fue enteramente desarrollada por Luciano Dona y cuenta con modificaciones y mejoras respecto al archivo original.</p>
     </div>
-  </details>
-</footer>
+  </div>
+</div>
 
 <!-- ============ Ventana flotante: tabla de K admisible (se clona del punto 06) ============ -->
 <div class="kmodal" id="k-modal" hidden>

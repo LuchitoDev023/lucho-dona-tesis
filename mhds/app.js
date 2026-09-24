@@ -631,7 +631,7 @@
   }
 
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { closeKModal(); closeKDet(); closeFicha(); hideRef(); }
+    if (e.key === 'Escape') { closeKModal(); closeKDet(); closeModal($('#about-modal')); closeFicha(); hideRef(); }
     if (fCode && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) {
       const btn = $(`.fmodal-step[data-step="${e.key === 'ArrowRight' ? 1 : -1}"]`);
       if (btn && !btn.disabled) openFicha(btn.dataset.code);
@@ -736,6 +736,21 @@ K = 1 / R<sub>total</sub></pre>
         <li><b>Las chapas de acero no suman resistencia apreciable</b> (del orden de 0,00001 m²K/W).</li>
       </ul>
       <a class="kmodal-link" href="#intro-k">Ver la tabla de valores admisibles ›</a>`;
+  }
+
+  // Abrir/cerrar una ventana flotante ya escrita en el HTML
+  function openModal(modal) {
+    if (!modal) return;
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    const cerrar = $('.kmodal-close', modal);
+    if (cerrar) cerrar.focus();
+  }
+
+  function closeModal(modal) {
+    if (!modal || modal.hidden) return;
+    modal.hidden = true;
+    document.body.style.overflow = '';
   }
 
   function openKDet(html) {
@@ -857,6 +872,10 @@ K = 1 / R<sub>total</sub></pre>
     const step = e.target.closest('.fmodal-step');
     if (step) { if (!step.disabled) openFicha(step.dataset.code); return; }
     if (e.target.closest('#f-modal-close') || e.target.id === 'f-modal') { closeFicha(); return; }
+
+    // Sobre éste manual
+    if (e.target.closest('[data-about]')) { openModal($('#about-modal')); return; }
+    if (e.target.closest('#about-close') || e.target.id === 'about-modal') { closeModal($('#about-modal')); return; }
 
     // Cálculo de K: paso a paso de una ficha, o método general
     const kdet = e.target.closest('[data-kdet]');

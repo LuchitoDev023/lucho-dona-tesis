@@ -709,27 +709,21 @@ table { border-collapse: collapse; width: 100%; font-size: .93rem; background: #
 .footer a { color: #fff; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 .footer a:hover { text-decoration-thickness: 2px; }
 
-/* Sobre este manual: desplegable al pie */
-.about-fold { max-width: 720px; margin: 18px auto 0; text-align: left; }
-.about-fold > summary {
-  cursor: pointer; list-style: none; user-select: none;
-  width: max-content; max-width: 100%; margin: 0 auto;
-  display: flex; align-items: center; gap: 9px; padding: 8px 18px;
-  border: 1px solid rgba(255,255,255,.4); border-radius: 999px;
-  font-size: .82rem; font-weight: 700; letter-spacing: .04em; color: #fff;
+/* Sobre éste manual: botón del pie y su ventana */
+.about-btn {
+  cursor: pointer; font-family: inherit;
+  padding: 9px 22px; border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.45); background: transparent;
+  font-size: .85rem; font-weight: 700; letter-spacing: .04em; color: #fff;
   transition: background .15s ease, border-color .15s ease;
 }
-.about-fold > summary::-webkit-details-marker { display: none; }
-.about-fold > summary::after { content: '+'; font-size: 1.05rem; font-weight: 400; transition: transform .2s; }
-.about-fold[open] > summary::after { transform: rotate(45deg); }
-.about-fold > summary:hover { background: rgba(255,255,255,.14); border-color: #fff; }
-.about-body {
-  margin-top: 16px; padding: 18px 22px;
-  background: rgba(255,255,255,.07); border-radius: 14px;
-  font-size: .88rem; line-height: 1.6;
-}
-.about-body p { opacity: .9; }
+.about-btn:hover, .about-btn:focus-visible { background: rgba(255,255,255,.16); border-color: #fff; outline: none; }
+.about-box { width: min(680px, 100%); text-align: left; }
+.about-body { margin-top: 14px; font-size: .92rem; line-height: 1.6; color: var(--ink); }
 .about-body p + p { margin-top: 12px; }
+.about-body a { color: var(--sage-dark); font-weight: 600; }
+.about-tesis { text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.about-tesis:hover { text-decoration-thickness: 2px; }
 
 .hidden { display: none !important; }
 mark { background: #ffe89a; border-radius: 3px; padding: 0 1px; }
