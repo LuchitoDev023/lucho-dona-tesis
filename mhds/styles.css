@@ -395,6 +395,62 @@ table { border-collapse: collapse; width: 100%; font-size: .93rem; background: #
 .kmodal-link { display: inline-block; margin-top: 12px; font-size: .85rem; font-weight: 700; color: var(--sage); text-decoration: none; }
 .kmodal-link:hover { text-decoration: underline; }
 
+/* ---------- Insignia de K clickeable y ventana con el cálculo ---------- */
+.k-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: inherit; border: 1px solid var(--line); cursor: pointer;
+  transition: background .15s ease, border-color .15s ease;
+}
+.k-badge:hover, .k-badge:focus-visible {
+  background: #e7efe9; border-color: var(--sage-light); outline: none;
+}
+.k-badge-i {
+  display: grid; place-items: center; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--sage); color: #fff; font-size: .6rem; font-weight: 800; font-style: italic;
+}
+
+.kdet-box { width: min(760px, 100%); }
+.kdet-kicker { font-size: .68rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 6px; }
+.kdet-table { font-size: .84rem; }
+.kdet-table th, .kdet-table td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: center; }
+.kdet-table thead th { background: #eef1ec; color: var(--sage-dark); font-size: .74rem; letter-spacing: .03em; }
+.kdet-table thead th small { font-weight: 600; color: var(--ink-soft); }
+.kdet-capa { text-align: left !important; }
+.kdet-capa small { display: block; font-size: .72rem; font-style: italic; color: var(--ink-soft); }
+.kdet-cuenta { color: var(--ink-soft); font-size: .8rem; white-space: nowrap; }
+.kdet-r { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.kdet-sup td { background: #f7f9f6; color: var(--ink-soft); }
+.kdet-total td { background: #eef4f8; font-weight: 800; text-align: right; }
+.kdet-result {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px;
+  margin: 16px 0 6px; padding: 14px 18px; background: #eef4f8; border-radius: 12px;
+}
+.kdet-formula { font-size: .9rem; color: var(--ink-soft); font-weight: 600; }
+.kdet-k { font-size: .85rem; color: var(--ink-soft); font-weight: 600; }
+.kdet-k span { font-size: 2rem; font-weight: 800; color: var(--sage-dark); letter-spacing: -.02em; margin-right: 4px; }
+.kdet-clase { margin-left: auto; }
+.kdet-sub { font-size: .88rem; color: var(--ink); margin-top: 12px; }
+.kdet-escala { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 0; }
+.kdet-escala li {
+  font-size: .82rem; background: #f0f2ee; color: var(--ink-soft);
+  padding: 4px 12px; border-radius: 999px;
+}
+.kdet-escala li.is-on { background: var(--sage); color: #fff; }
+.kdet-escala li.is-on b { color: #fff; }
+.kdet-nota { font-size: .8rem; font-style: italic; color: var(--ink-soft); margin-top: 14px; }
+.kdet-form {
+  font-family: "Consolas", "Menlo", monospace; font-size: .88rem; line-height: 1.8;
+  background: #f4f6f3; border-radius: 10px; padding: 14px 18px; margin: 14px 0;
+  white-space: pre-wrap; color: var(--ink);
+}
+.kdet-lista { padding-left: 20px; font-size: .86rem; margin-top: 6px; }
+.kdet-lista li { margin-bottom: 7px; }
+.kdet-link {
+  margin-top: 16px; padding: 0; border: 0; background: none; cursor: pointer;
+  font-family: inherit; font-size: .85rem; font-weight: 700; color: var(--sage);
+}
+.kdet-link:hover { text-decoration: underline; }
+
 /* Avisos generales al pie de una subcategoría */
 .group-notes { margin-top: 18px; }
 
@@ -692,6 +748,11 @@ mark { background: #ffe89a; border-radius: 3px; padding: 0 1px; }
   .cmp-row-k { grid-area: value; }
   .cmp-thumb { width: 84px; height: 84px; }
   .kmodal-box { padding: 30px 20px 22px; }
+  .kdet-table { font-size: .76rem; }
+  .kdet-table th, .kdet-table td { padding: 6px 6px; }
+  .kdet-cuenta { display: none; }
+  .kdet-table thead th:nth-child(4) { display: none; }
+  .kdet-clase { margin-left: 0; }
   .agua { padding: 14px 14px 12px; }
   .agua-row { grid-template-columns: minmax(0, 1fr) 56px; grid-template-areas: "name name" "bars save"; gap: 6px 12px; }
   .agua-name { grid-area: name; }

@@ -129,7 +129,13 @@
 
     const badges = [];
     if (s.iram) badges.push(`<span class="iram-badge ${iramClass(s.iram)}">${esc(s.iram)}</span>`);
-    if (s.esp) badges.push(`<span class="data-badge">Esp. ${esc(s.esp)}</span><span class="data-badge">K ${esc(s.k)} W/m²K</span>`);
+    if (s.esp) {
+      badges.push(`<span class="data-badge">Esp. ${esc(s.esp)}</span>`);
+      // El K abre el paso a paso del cálculo cuando la ficha lo tiene precalculado
+      badges.push(K_DETALLE[s.code]
+        ? `<button type="button" class="data-badge k-badge" data-kdet="${s.code}" title="Ver cómo se calcula este K">K ${esc(s.k)} W/m²K<span class="k-badge-i" aria-hidden="true">i</span></button>`
+        : `<span class="data-badge">K ${esc(s.k)} W/m²K</span>`);
+    }
     if (s.kdato) badges.push(`<span class="data-badge">${esc(s.kdato)}</span>`);
 
     // Las fichas con tabla o funcionamiento (AE01, AE03, AE04) muestran la línea
@@ -459,10 +465,15 @@
     if (!g.name) return grid;
     const id = groupId(catKey, g.name);
     const open = state.query || state.open.has(id) ? ' open' : '';
+    // Muro y Cubierta llevan un "!" con el método de cálculo del K
+    const metodo = catKey === 'EV' && (g.name === 'Muro' || g.name === 'Cubierta')
+      ? '<button type="button" class="info-btn" data-kmetodo title="Cómo se calcula el K" aria-label="Ver el método de cálculo de la transmitancia térmica">!</button>'
+      : '';
     return `<details class="group-section" id="${id}"${open}>
       <summary class="group-summary">
         <span class="group-name">${esc(g.name)}</span>
         <span class="group-count">${g.items.length}</span>
+        ${metodo}
         ${ARROW}
       </summary>
       <div class="group-content">${grid}</div>
@@ -620,12 +631,129 @@
   }
 
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { closeKModal(); closeFicha(); hideRef(); }
+    if (e.key === 'Escape') { closeKModal(); closeKDet(); closeFicha(); hideRef(); }
     if (fCode && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) {
       const btn = $(`.fmodal-step[data-step="${e.key === 'ArrowRight' ? 1 : -1}"]`);
       if (btn && !btn.disabled) openFicha(btn.dataset.code);
     }
   });
+
+  // ============================================================
+  //  CÓMO SE CALCULA EL K: paso a paso por ficha y método general
+  // ============================================================
+  const nf4 = n => n.toFixed(4).replace('.', ',');
+  const nf2 = n => n.toFixed(2).replace('.', ',');
+
+  // Fila de la tabla: capa, espesor, conductividad y resistencia
+  function kFila(c) {
+    const num = n => String(+n.toFixed(4)).replace('.', ',');
+    const dato = c.lambda != null ? `λ = ${num(c.lambda)}`
+      : c.rTab != null ? '<i>R de tabla</i>' : '—';
+    const cuenta = c.lambda != null ? `${num(c.e)} ÷ ${num(c.lambda)}`
+      : c.rTab != null ? 'valor tabulado' : '—';
+    const cm = +(c.e * 100).toFixed(2);
+    return `<tr>
+      <td class="kdet-capa">${esc(c.n)}${c.nota ? `<small>${esc(c.nota)}</small>` : ''}</td>
+      <td>${String(cm).replace('.', ',')} cm</td>
+      <td>${dato}</td>
+      <td class="kdet-cuenta">${cuenta}</td>
+      <td class="kdet-r">${nf4(c.r)}</td>
+    </tr>`;
+  }
+
+  function kDetalleHTML(code) {
+    const d = K_DETALLE[code];
+    const s = STRATEGIES.find(x => x.code === code);
+    if (!d || !s) return '';
+    const cat = CATEGORIES[s.cat];
+    const lim = d.limites;
+    const escala = [['A', lim.A], ['B', lim.B], ['C', lim.C]].map(([n, v]) =>
+      `<li class="${d.clase === 'Clase ' + n ? 'is-on' : ''}"><b>Clase ${n}</b> K ≤ ${nf2(v)}</li>`).join('');
+
+    return `<p class="kdet-kicker">${esc(cat.num)} | ${esc(cat.name)} · ${esc(d.tipo)}</p>
+      <p class="kmodal-title" id="k-det-title">${esc(code)} · ${esc(s.title)}</p>
+      <p class="kmodal-lead">Resistencias en serie según la <b>Norma IRAM 11601</b>: cada capa aporta
+        <b>R = e / λ</b> (espesor en metros dividido su conductividad) y el resultado es
+        <b>K = 1 / R<sub>total</sub></b>. Condición de cálculo: ${esc(d.estacion)}.</p>
+      <div class="table-wrap">
+        <table class="kdet-table">
+          <thead><tr>
+            <th>Capa, de interior a exterior</th><th>Espesor</th>
+            <th>Conductividad<br><small>W/mK</small></th><th>Cuenta</th>
+            <th>R<br><small>m²K/W</small></th>
+          </tr></thead>
+          <tbody>
+            <tr class="kdet-sup"><td class="kdet-capa">Resistencia superficial interior (Rsi)</td><td>—</td><td>—</td><td class="kdet-cuenta">de tabla</td><td class="kdet-r">${nf4(d.rsi)}</td></tr>
+            ${d.capas.map(kFila).join('')}
+            <tr class="kdet-sup"><td class="kdet-capa">Resistencia superficial exterior (Rse)</td><td>—</td><td>—</td><td class="kdet-cuenta">de tabla</td><td class="kdet-r">${nf4(d.rse)}</td></tr>
+            <tr class="kdet-total"><td colspan="4">Resistencia térmica total (R<sub>total</sub>)</td><td class="kdet-r">${nf4(d.rTot)}</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="kdet-result">
+        <p class="kdet-formula">K = 1 ÷ ${nf4(d.rTot)} =</p>
+        <p class="kdet-k"><span>${nf2(d.k)}</span> W/m²K</p>
+        <p class="kdet-clase"><span class="iram-badge ${iramClass(d.clase)}">${esc(d.clase)}</span></p>
+      </div>
+      <p class="kdet-sub">Máximos admisibles para ${esc(d.tipo === 'muro' ? 'muros' : 'cubiertas')} en la región centro de Santa Fe
+        (<b>Norma IRAM 11.605</b>${d.tipo === 'muro' ? ', temperatura exterior de diseño −3 °C' : ', zona bioambiental II, condición verano'}):</p>
+      <ul class="kdet-escala">${escala}</ul>
+      <p class="kdet-nota">El espesor total de la solución es de ${String(d.esp).replace('.', ',')} cm.
+        El cálculo toma las capas como homogéneas: no descuenta puentes térmicos (montantes, juntas de mortero).</p>
+      <p><button type="button" class="kdet-link" data-kmetodo>Ver el método de cálculo completo ›</button></p>`;
+  }
+
+  function kMetodoHTML() {
+    return `<p class="kdet-kicker">Envolventes · transmitancia térmica</p>
+      <p class="kmodal-title" id="k-det-title">Cómo se calcula el K</p>
+      <p class="kmodal-lead">La transmitancia térmica <b>K</b> mide cuánto calor atraviesa 1 m² de envolvente
+        por cada grado de diferencia entre interior y exterior. Se calcula sumando las resistencias de todas
+        las capas, en serie, según la <b>Norma IRAM 11601</b>.</p>
+      <pre class="kdet-form">R<sub>capa</sub> = e / λ      (espesor en metros ÷ conductividad)
+R<sub>total</sub> = Rsi + Σ R<sub>capa</sub> + Rse
+K = 1 / R<sub>total</sub></pre>
+      <p class="kdet-sub">Las cámaras de aire y los materiales que la norma da con resistencia tabulada
+        —la lana de vidrio, por ejemplo— entran con su R directa, sin dividir por el espesor.</p>
+      <p class="kdet-sub"><b>Resistencias superficiales</b>, que son lo que distingue un muro de una cubierta:</p>
+      <div class="table-wrap">
+        <table class="kdet-table kdet-table-sup">
+          <thead><tr><th>Elemento y dirección del flujo</th><th>Rsi</th><th>Rse</th></tr></thead>
+          <tbody>
+            <tr><td>Muro — flujo horizontal</td><td class="kdet-r">0,13</td><td class="kdet-r">0,04</td></tr>
+            <tr><td>Cubierta en invierno — flujo ascendente</td><td class="kdet-r">0,10</td><td class="kdet-r">0,04</td></tr>
+            <tr><td>Cubierta en verano — flujo descendente</td><td class="kdet-r">0,17</td><td class="kdet-r">0,04</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="kdet-sub">En los muros el K es el mismo en las dos estaciones. En las cubiertas, las fichas
+        publican el de <b>verano</b>, que es la condición con la que se las compara. La clase surge de
+        comparar ese K con los máximos admisibles de la <b>Norma IRAM 11.605</b>: en muros según la
+        temperatura exterior de diseño (−3 °C en la región) y en cubiertas según la zona bioambiental (II).</p>
+      <p class="kdet-sub"><b>Tres límites del método:</b></p>
+      <ul class="kdet-lista">
+        <li><b>No contempla puentes térmicos.</b> Cada capa se toma homogénea, en una dimensión. En Steel Framing los montantes atraviesan el aislante, así que el K real de la pared es algo mayor.</li>
+        <li><b>Las barreras de vapor y de viento entran con R = 0.</b> Su aporte térmico es despreciable, aunque sí cuentan para la condensación.</li>
+        <li><b>Las chapas de acero no suman resistencia apreciable</b> (del orden de 0,00001 m²K/W).</li>
+      </ul>
+      <a class="kmodal-link" href="#intro-k">Ver la tabla de valores admisibles ›</a>`;
+  }
+
+  function openKDet(html) {
+    const modal = $('#k-det-modal');
+    if (!modal || !html) return;
+    $('#k-det-body').innerHTML = html;
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    $('.kdet-box', modal).scrollTop = 0;
+    $('#k-det-close').focus();
+  }
+
+  function closeKDet() {
+    const modal = $('#k-det-modal');
+    if (!modal || modal.hidden) return;
+    modal.hidden = true;
+    document.body.style.overflow = '';
+  }
 
   // ---------- Bibliografía y fuentes (al final de la página) ----------
   function renderBiblio() {
@@ -730,6 +858,25 @@
     if (step) { if (!step.disabled) openFicha(step.dataset.code); return; }
     if (e.target.closest('#f-modal-close') || e.target.id === 'f-modal') { closeFicha(); return; }
 
+    // Cálculo de K: paso a paso de una ficha, o método general
+    const kdet = e.target.closest('[data-kdet]');
+    if (kdet) {
+      e.preventDefault();
+      e.stopPropagation();
+      openKDet(kDetalleHTML(kdet.dataset.kdet));
+      return;
+    }
+    if (e.target.closest('[data-kmetodo]')) {
+      e.preventDefault();      // evita que el <summary> se despliegue
+      e.stopPropagation();
+      openKDet(kMetodoHTML());
+      return;
+    }
+    if (e.target.closest('#k-det-close') || e.target.id === 'k-det-modal') {
+      closeKDet();
+      return;
+    }
+
     // Ventana flotante con la tabla de K admisible
     if (e.target.closest('[data-kmodal]')) {
       e.preventDefault();      // evita que el <summary> se despliegue
@@ -765,6 +912,7 @@
     if (!target) return;
     e.preventDefault();
     closeKModal();
+    closeKDet();
     closeFicha();
     hideRef();
     openAncestors(target.matches('details') ? target.parentElement : target);
