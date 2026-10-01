@@ -430,6 +430,49 @@ const K_DETALLE = {
    "C": 1.59
   }
  },
+ "EV25": {
+  "tipo": "muro",
+  "estacion": "invierno y verano (flujo horizontal)",
+  "rsi": 0.13,
+  "rse": 0.04,
+  "capas": [
+   {
+    "n": "Placa OSB (650)",
+    "e": 0.0095,
+    "lambda": 0.13,
+    "rTab": null,
+    "r": 0.0731,
+    "nota": null
+   },
+   {
+    "n": "Poliestireno expandido en planchas (15)",
+    "e": 0.09,
+    "lambda": 0.037,
+    "rTab": null,
+    "r": 2.4324,
+    "nota": null
+   },
+   {
+    "n": "Placa OSB (650)",
+    "e": 0.0095,
+    "lambda": 0.13,
+    "rTab": null,
+    "r": 0.0731,
+    "nota": null
+   }
+  ],
+  "sumaCapas": 2.5786,
+  "rTot": 2.7486,
+  "k": 0.36,
+  "kExacto": 0.3638,
+  "esp": 10.9,
+  "clase": "Clase B",
+  "limites": {
+   "A": 0.33,
+   "B": 0.91,
+   "C": 1.59
+  }
+ },
  "EV09": {
   "tipo": "cubierta",
   "estacion": "verano (flujo descendente)",

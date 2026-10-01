@@ -101,6 +101,12 @@ const STRATEGIES = [
     capas: ['Placa de yeso', 'Montante PGC 100', 'Lana de vidrio 100mm', 'Placa OSB', 'Barrera de agua y viento', 'Placa EPS 20mm', 'Base coat y finish'],
     esp: '15cm', k: '0,32', iram: 'Clase A',
     tip: 'Una pared de Steel Framing aisla 9 veces más que una de ladrillo común de similar espesor.[*nota-k]' },
+  // Incorporada a la versión web: no figura en el PDF del Anexo I, por eso sigue
+  // la numeración después de la última ficha (EV24) aunque se lea entre los muros.
+  { code: 'EV25', cat: 'EV', group: 'Muro', title: 'Panel SIP 90',
+    capas: ['Placa OSB 9,5mm', 'Placa EPS 90mm (15 a 20 kg/m³)', 'Placa OSB 9,5mm'],
+    esp: '10,9cm', k: '0,36', iram: 'Clase B',
+    tip: 'El panel mide <b>1,22 × 2,44 m</b> y llega a obra con el aislante incorporado: una sola pieza resuelve estructura, aislación y terminación base. Con EPS de 20 kg/m³ el K baja a 0,35 W/m²K.' },
   { code: 'EV09', cat: 'EV', group: 'Cubierta', title: 'Losa de hormigón armado (S/Aislación)',
     capas: ['Losa de hormigón armado 0,10 m', 'Film de polietileno', 'Contrapiso', 'Carpeta niveladora impermeable', 'Membrana hidrófuga'],
     esp: '20cm', k: '2,67', iram: 'No cumple' },
